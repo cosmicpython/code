@@ -29,19 +29,19 @@ class Shipment:
 @dataclass
 class Allocation:
     order_id: str
-    shipment_id: str
     sku: str
     quantity: int
+    shipment_id: str
 
 
+def to_list(fn):
+    return lambda *a, **kw: list(fn(*a, **kw))
 
+
+@to_list
 def allocate(order, stock, shipments):
-    line = order.lines[0]
-    if stock:
-        return [
-            Allocation(order.id, None, line.sku, line.quantity)
-        ]
-
-    return [
-        Allocation(order.id, shipments[0].id, line.sku, line.quantity)
-    ]
+    for line in order.lines:
+        if stock:
+            yield Allocation(order.id, line.sku, line.quantity, shipment_id=None)
+        else:
+            yield Allocation(order.id, line.sku, line.quantity, shipments[0].id,)

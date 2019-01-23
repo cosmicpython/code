@@ -44,4 +44,8 @@ def allocate(order, stock, shipments):
         if stock:
             yield Allocation(order.id, line.sku, line.quantity, shipment_id=None)
         else:
-            yield Allocation(order.id, line.sku, line.quantity, shipments[0].id,)
+            for shipment in shipments:
+                for shipment_line in shipment.lines:
+                    if shipment_line.sku == line.sku:
+                        yield Allocation(order.id, line.sku, line.quantity, shipment.id)
+

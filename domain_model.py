@@ -38,13 +38,24 @@ def to_list(fn):
     return lambda *a, **kw: list(fn(*a, **kw))
 
 
+def allocate_to_stock(order_id, line, stock):
+    for stock_line in stock:
+        if stock_line.sku == line.sku:
+            return Allocation(order_id, line.sku, line.quantity, shipment_id=None)
+
+def allocate_to_shipments(order_id, line, shipments):
+    for shipment in shipments:
+        for shipment_line in shipment.lines:
+            if shipment_line.sku == line.sku:
+                return Allocation(order_id, line.sku, line.quantity, shipment.id)
+
 @to_list
 def allocate(order, stock, shipments):
     for line in order.lines:
-        for stock_line in stock:
-            yield Allocation(order.id, line.sku, line.quantity, shipment_id=None)
-        for shipment in shipments:
-            for shipment_line in shipment.lines:
-                if shipment_line.sku == line.sku:
-                    yield Allocation(order.id, line.sku, line.quantity, shipment.id)
+        a = allocate_to_stock(order.id, line, stock)
+        if a:
+            yield a
+        else:
+            yield allocate_to_shipments(order.id, line, shipments)
+
 

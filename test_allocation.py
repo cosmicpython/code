@@ -8,8 +8,12 @@ from domain_model import (
     OrderLine,
     Shipment,
     Stock,
-    allocate,
+    allocate as allocate_
 )
+
+
+allocate = lambda *a, **kw: list(allocate_(*a, **kw))
+
 
 def random_id():
     return uuid.uuid4().hex[:10]
@@ -45,6 +49,7 @@ def test_can_allocate_to_shipment():
     assert allocations[0].sku == sku
     assert allocations[0].shipment_id == shipment.id
     assert allocations[0].quantity == 10
+
 
 def test_ignores_invalid_stock():
     sku1, sku2 = random_id(), random_id()
@@ -176,6 +181,5 @@ def test_can_allocate_to_both_preferring_stock():
     assert Allocation(order.id, sku3, 10, shipment_id=None) in allocations
     assert Allocation(order.id, sku4, 10, shipment_id=None) in allocations
     assert Allocation(order.id, sku3, 10, shipment_id=shipment.id) not in allocations
-
 
 

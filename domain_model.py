@@ -41,11 +41,10 @@ def to_list(fn):
 @to_list
 def allocate(order, stock, shipments):
     for line in order.lines:
-        if stock:
+        for stock_line in stock:
             yield Allocation(order.id, line.sku, line.quantity, shipment_id=None)
-        else:
-            for shipment in shipments:
-                for shipment_line in shipment.lines:
-                    if shipment_line.sku == line.sku:
-                        yield Allocation(order.id, line.sku, line.quantity, shipment.id)
+        for shipment in shipments:
+            for shipment_line in shipment.lines:
+                if shipment_line.sku == line.sku:
+                    yield Allocation(order.id, line.sku, line.quantity, shipment.id)
 

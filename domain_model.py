@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date
 
 @dataclass
 class Order:
@@ -22,9 +22,8 @@ class Stock:
 @dataclass
 class Shipment:
     id: str
-    sku: str
-    quantity: int
-    eta: datetime
+    eta: date
+    lines: list
 
 
 @dataclass
@@ -38,6 +37,11 @@ class Allocation:
 
 def allocate(order, stock, shipments):
     line = order.lines[0]
+    if stock:
+        return [
+            Allocation(order.id, None, line.sku, line.quantity)
+        ]
+
     return [
-        Allocation(order.id, None, line.sku, line.quantity)
+        Allocation(order.id, shipments[0].id, line.sku, line.quantity)
     ]

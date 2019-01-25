@@ -19,6 +19,14 @@ class Shipment:
     lines: list
 
 
+def skus(thing):
+    try:
+        return {line.sku for line in thing}
+    except TypeError:
+        return {line.sku for line in thing.lines}
+
+
+
 def allocate_to_stock(line, stock):
     for stock_line in stock:
         if stock_line.sku == line.sku:
@@ -31,8 +39,18 @@ def allocate_to_shipments(line, shipments):
                 line.allocation = shipment.id
 
 def allocate(order, stock, shipments):
+    if skus(order) <= skus(stock):
+        for line in order:
+            line.allocation = 'STOCK'
+        return
+
+    for shipment in shipments:
+        if skus(order) <= skus(shipment):
+            for line in order:
+                line.allocation = shipment.id
+            return
+
     for line in order:
         allocate_to_stock(line, stock)
         if line.allocation is None:
             allocate_to_shipments(line, shipments)
-

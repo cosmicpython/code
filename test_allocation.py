@@ -154,3 +154,21 @@ def test_can_allocate_to_both_preferring_stock():
     assert order[2].allocation == 'STOCK'
     assert order[3].allocation == 'STOCK'
 
+
+def test_mixed_allocations_are_avoided_if_possible():
+    sku1, sku2 = random_id(), random_id()
+    order = [
+        OrderLine(sku=sku1, quantity=10),
+        OrderLine(sku=sku2, quantity=10),
+    ]
+    shipment = Shipment(id=random_id(), eta=date.today(), lines=[
+        Line(sku=sku1, quantity=1000),
+        Line(sku=sku2, quantity=1000),
+    ])
+    stock = [Line(sku=sku1, quantity=1000)]
+
+    allocate(order, stock, shipments=[shipment])
+
+    assert order[0].allocation == shipment.id
+    assert order[1].allocation == shipment.id
+

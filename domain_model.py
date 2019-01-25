@@ -2,15 +2,13 @@ from dataclasses import dataclass
 from datetime import date
 
 @dataclass
-class Order:
-    id: str
-    lines: list
+class Line:
+    sku: str
+    quantity: int
 
 
 @dataclass
-class OrderLine:
-    sku: str
-    quantity: int
+class OrderLine(Line):
     allocation: str = None
 
 
@@ -39,7 +37,7 @@ def allocate_to_shipments(line, shipments):
                 line.allocation = shipment.id
 
 def allocate(order, stock, shipments):
-    for line in order.lines:
+    for line in order:
         allocate_to_stock(line, stock)
         if not line.allocation:
             allocate_to_shipments(line, shipments)

@@ -18,9 +18,7 @@ def random_id():
 
 def test_can_allocate_to_stock():
     sku = random_id()
-    order = [
-        OrderLine(sku=sku, quantity=10),
-    ]
+    order = [OrderLine(sku=sku, quantity=10)]
     stock = [Line(sku=sku, quantity=1000)]
 
     allocate(order, stock, shipments=[])
@@ -30,9 +28,7 @@ def test_can_allocate_to_stock():
 
 def test_can_allocate_to_shipment():
     sku = random_id()
-    order = [
-        OrderLine(sku=sku, quantity=10),
-    ]
+    order = [OrderLine(sku=sku, quantity=10)]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku, quantity=1000),
     ])
@@ -44,9 +40,7 @@ def test_can_allocate_to_shipment():
 
 def test_ignores_invalid_stock():
     sku1, sku2 = random_id(), random_id()
-    order = [
-        OrderLine(sku=sku1, quantity=10),
-    ]
+    order = [OrderLine(sku=sku1, quantity=10), ]
     stock = [Line(sku=sku2, quantity=1000)]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku1, quantity=1000),
@@ -59,9 +53,7 @@ def test_ignores_invalid_stock():
 
 def test_can_allocate_to_correct_shipment():
     sku1, sku2 = random_id(), random_id()
-    order = [
-        OrderLine(sku=sku2, quantity=10),
-    ]
+    order = [OrderLine(sku=sku2, quantity=10)]
     shipment1 = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku1, quantity=1000),
     ])
@@ -76,9 +68,7 @@ def test_can_allocate_to_correct_shipment():
 
 def test_allocates_to_stock_in_preference_to_shipment():
     sku = random_id()
-    order = [
-        OrderLine(sku=sku, quantity=10),
-    ]
+    order = [OrderLine(sku=sku, quantity=10)]
     stock = [Line(sku=sku, quantity=1000)]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku, quantity=1000),

@@ -26,28 +26,36 @@ def skus(thing):
         return {line.sku for line in thing.lines}
 
 
+def allocate_to(line, allocation, quantities):
+    for quantity in quantities:
+        if quantity.sku == line.sku and quantity.quantity > line.quantity:
+            line.allocation = allocation
+            return
 
 def allocate_to_stock(line, stock):
-    for stock_line in stock:
-        if stock_line.sku == line.sku:
-            line.allocation = 'STOCK'
+    allocate_to(line, 'STOCK', stock)
+
+def allocate_to_shipment(line, shipment):
+    allocate_to(line, shipment.id, shipment.lines)
+
 
 def allocate_to_shipments(line, shipments):
     for shipment in shipments:
-        for shipment_line in shipment.lines:
-            if shipment_line.sku == line.sku:
-                line.allocation = shipment.id
+        allocate_to_shipment(line, shipment)
+        if line.allocation is not None:
+            return
+
 
 def allocate(order, stock, shipments):
     if skus(order) <= skus(stock):
         for line in order:
-            line.allocation = 'STOCK'
+            allocate_to_stock(line, stock)
         return
     shipments.sort(key=lambda s: s.eta)
     for shipment in shipments:
         if skus(order) <= skus(shipment):
             for line in order:
-                line.allocation = shipment.id
+                allocate_to(line, shipment.id, shipment.lines)
             return
 
     for line in order:

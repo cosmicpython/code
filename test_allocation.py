@@ -212,3 +212,23 @@ def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
     assert order[1].allocation == shipment2.id
     assert order[2].allocation == shipment2.id
 
+
+def test_cannot_allocate_if_insufficent_quantity_in_stock():
+    order = [OrderLine(sku='a-sku', quantity=10)]
+    stock = [Line(sku='a-sku', quantity=5)]
+
+    allocate(order, stock, shipments=[])
+
+    assert order[0].allocation is None
+
+
+def test_cannot_allocate_if_insufficent_quantity_in_shipment():
+    order = [OrderLine(sku='a-sku', quantity=10)]
+    shipment = Shipment(id='shipment-id', eta=date.today(), lines=[
+        Line(sku='a-sku', quantity=5),
+    ])
+
+    allocate(order, stock=[], shipments=[shipment])
+
+    assert order[0].allocation is None
+

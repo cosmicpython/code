@@ -33,6 +33,6 @@ def allocate_to_shipments(line, shipments):
 def allocate(order, stock, shipments):
     for line in order:
         allocate_to_stock(line, stock)
-        if not line.allocation:
+        if line.allocation is None:
             allocate_to_shipments(line, shipments)
 

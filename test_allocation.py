@@ -3,16 +3,14 @@ from datetime import date
 
 
 from domain_model import (
-    Allocation,
     Order,
     OrderLine,
     Shipment,
     Stock,
-    allocate as allocate_
+    allocate,
 )
 
 
-allocate = lambda *a, **kw: list(allocate_(*a, **kw))
 
 
 def random_id():
@@ -26,12 +24,9 @@ def test_can_allocate_to_warehouse_stock():
     ])
     stock = Stock(sku=sku, quantity=1000)
 
-    allocations = allocate(order, [stock], shipments=[])
+    allocate(order, [stock], shipments=[])
 
-    assert allocations[0].order_id == order.id
-    assert allocations[0].sku == sku
-    assert allocations[0].shipment_id is None
-    assert allocations[0].quantity == 10
+    assert order.lines[0].allocation == 'warehouse'
 
 
 def test_can_allocate_to_shipment():
@@ -43,12 +38,9 @@ def test_can_allocate_to_shipment():
         OrderLine(sku=sku, quantity=1000),
     ])
 
-    allocations = allocate(order, stock=[], shipments=[shipment])
+    allocate(order, stock=[], shipments=[shipment])
 
-    assert allocations[0].order_id == order.id
-    assert allocations[0].sku == sku
-    assert allocations[0].shipment_id == shipment.id
-    assert allocations[0].quantity == 10
+    assert order.lines[0].allocation == shipment.id
 
 
 def test_ignores_invalid_stock():
@@ -61,12 +53,9 @@ def test_ignores_invalid_stock():
         OrderLine(sku=sku1, quantity=1000),
     ])
 
-    allocations = allocate(order, stock=[stock], shipments=[shipment])
+    allocate(order, stock=[stock], shipments=[shipment])
 
-    assert allocations[0].order_id == order.id
-    assert allocations[0].sku == sku1
-    assert allocations[0].shipment_id == shipment.id
-    assert allocations[0].quantity == 10
+    assert order.lines[0].allocation == shipment.id
 
 
 def test_can_allocate_to_correct_shipment():
@@ -81,12 +70,9 @@ def test_can_allocate_to_correct_shipment():
         OrderLine(sku=sku2, quantity=1000),
     ])
 
-    allocations = allocate(order, stock=[], shipments=[shipment1, shipment2])
+    allocate(order, stock=[], shipments=[shipment1, shipment2])
 
-    assert allocations[0].order_id == order.id
-    assert allocations[0].sku == sku2
-    assert allocations[0].shipment_id == shipment2.id
-    assert allocations[0].quantity == 10
+    assert order.lines[0].allocation == shipment2.id
 
 
 def test_allocates_to_warehouse_stock_in_preference_to_shipment():
@@ -99,12 +85,9 @@ def test_allocates_to_warehouse_stock_in_preference_to_shipment():
         OrderLine(sku=sku, quantity=1000),
     ])
 
-    allocations = allocate(order, [stock], shipments=[shipment])
+    allocate(order, [stock], shipments=[shipment])
 
-    assert allocations[0].order_id == order.id
-    assert allocations[0].sku == sku
-    assert allocations[0].shipment_id is None
-    assert allocations[0].quantity == 10
+    assert order.lines[0].allocation == 'warehouse'
 
 
 def test_can_allocate_multiple_lines_to_wh():
@@ -118,9 +101,9 @@ def test_can_allocate_multiple_lines_to_wh():
         Stock(sku=sku2, quantity=1000),
     ]
 
-    allocations = allocate(order, stock, shipments=[])
-    assert Allocation(order.id, sku1, 10, shipment_id=None) in allocations
-    assert Allocation(order.id, sku2, 10, shipment_id=None) in allocations
+    allocate(order, stock, shipments=[])
+    assert order.lines[0].allocation == 'warehouse'
+    assert order.lines[1].allocation == 'warehouse'
 
 
 def test_can_allocate_multiple_lines_to_shipment():
@@ -134,9 +117,10 @@ def test_can_allocate_multiple_lines_to_shipment():
         OrderLine(sku=sku2, quantity=1000),
     ])
 
-    allocations = allocate(order, [], shipments=[shipment])
-    assert Allocation(order.id, sku1, 10, shipment_id=shipment.id) in allocations
-    assert Allocation(order.id, sku2, 10, shipment_id=shipment.id) in allocations
+    allocate(order, [], shipments=[shipment])
+
+    assert order.lines[0].allocation == shipment.id
+    assert order.lines[1].allocation == shipment.id
 
 
 def test_can_allocate_to_both():
@@ -152,9 +136,10 @@ def test_can_allocate_to_both():
         Stock(sku=sku1, quantity=1000),
     ]
 
-    allocations = allocate(order, stock, shipments=[shipment])
-    assert Allocation(order.id, sku1, 10, shipment_id=None) in allocations
-    assert Allocation(order.id, sku2, 10, shipment_id=shipment.id) in allocations
+    allocate(order, stock, shipments=[shipment])
+
+    assert order.lines[0].allocation == 'warehouse'
+    assert order.lines[1].allocation == shipment.id
 
 
 def test_can_allocate_to_both_preferring_stock():
@@ -175,11 +160,10 @@ def test_can_allocate_to_both_preferring_stock():
         Stock(sku=sku4, quantity=1000),
     ]
 
-    allocations = allocate(order, stock, shipments=[shipment])
-    assert Allocation(order.id, sku1, 10, shipment_id=shipment.id) in allocations
-    assert Allocation(order.id, sku2, 10, shipment_id=shipment.id) in allocations
-    assert Allocation(order.id, sku3, 10, shipment_id=None) in allocations
-    assert Allocation(order.id, sku4, 10, shipment_id=None) in allocations
-    assert Allocation(order.id, sku3, 10, shipment_id=shipment.id) not in allocations
+    allocate(order, stock, shipments=[shipment])
 
+    assert order.lines[0].allocation == shipment.id
+    assert order.lines[1].allocation == shipment.id
+    assert order.lines[2].allocation == 'warehouse'
+    assert order.lines[3].allocation == 'warehouse'
 

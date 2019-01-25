@@ -39,11 +39,10 @@ def test_can_allocate_to_shipment():
 
 
 def test_ignores_invalid_stock():
-    sku1, sku2 = random_id(), random_id()
-    order = [OrderLine(sku=sku1, quantity=10), ]
-    stock = [Line(sku=sku2, quantity=1000)]
+    order = [OrderLine(sku='sku1', quantity=10), ]
+    stock = [Line(sku='sku2', quantity=1000)]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
+        Line(sku='sku1', quantity=1000),
     ])
 
     allocate(order, stock=stock, shipments=[shipment])
@@ -52,13 +51,12 @@ def test_ignores_invalid_stock():
 
 
 def test_can_allocate_to_correct_shipment():
-    sku1, sku2 = random_id(), random_id()
-    order = [OrderLine(sku=sku2, quantity=10)]
+    order = [OrderLine(sku='sku2', quantity=10)]
     shipment1 = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
+        Line(sku='sku1', quantity=1000),
     ])
     shipment2 = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ])
 
     allocate(order, stock=[], shipments=[shipment1, shipment2])
@@ -80,14 +78,13 @@ def test_allocates_to_stock_in_preference_to_shipment():
 
 
 def test_can_allocate_multiple_lines_to_wh():
-    sku1, sku2 = random_id(), random_id()
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
     ]
     stock = [
-        Line(sku=sku1, quantity=1000),
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku1', quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ]
 
     allocate(order, stock, shipments=[])
@@ -96,14 +93,13 @@ def test_can_allocate_multiple_lines_to_wh():
 
 
 def test_can_allocate_multiple_lines_to_shipment():
-    sku1, sku2 = random_id(), random_id()
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
     ]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku1', quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ])
 
     allocate(order, [], shipments=[shipment])
@@ -113,15 +109,14 @@ def test_can_allocate_multiple_lines_to_shipment():
 
 
 def test_can_allocate_to_both():
-    sku1, sku2 = random_id(), random_id()
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
     ]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ])
-    stock = [Line(sku=sku1, quantity=1000)]
+    stock = [Line(sku='sku1', quantity=1000)]
 
     allocate(order, stock, shipments=[shipment])
 
@@ -130,21 +125,20 @@ def test_can_allocate_to_both():
 
 
 def test_can_allocate_to_both_preferring_stock():
-    sku1, sku2, sku3, sku4 = [random_id() for _ in range(4)]
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
-        OrderLine(sku=sku3, quantity=10),
-        OrderLine(sku=sku4, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
+        OrderLine(sku='sku3', quantity=10),
+        OrderLine(sku='sku4', quantity=10),
     ]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
-        Line(sku=sku2, quantity=1000),
-        Line(sku=sku3, quantity=1000),
+        Line(sku='sku1', quantity=1000),
+        Line(sku='sku2', quantity=1000),
+        Line(sku='sku3', quantity=1000),
     ])
     stock = [
-        Line(sku=sku3, quantity=1000),
-        Line(sku=sku4, quantity=1000),
+        Line(sku='sku3', quantity=1000),
+        Line(sku='sku4', quantity=1000),
     ]
 
     allocate(order, stock, shipments=[shipment])
@@ -156,16 +150,15 @@ def test_can_allocate_to_both_preferring_stock():
 
 
 def test_mixed_allocations_are_avoided_if_possible():
-    sku1, sku2 = random_id(), random_id()
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
     ]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku1', quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ])
-    stock = [Line(sku=sku1, quantity=1000)]
+    stock = [Line(sku='sku1', quantity=1000)]
 
     allocate(order, stock, shipments=[shipment])
 
@@ -174,19 +167,18 @@ def test_mixed_allocations_are_avoided_if_possible():
 
 
 def test_prefer_allocating_to_earlier_shipment():
-    sku1, sku2 = random_id(), random_id()
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
     ]
     shipment1 = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku1', quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ])
     tomorrow = date.today() + timedelta(days=1)
     shipment2 = Shipment(id=random_id(), eta=tomorrow, lines=[
-        Line(sku=sku1, quantity=1000),
-        Line(sku=sku2, quantity=1000),
+        Line(sku='sku1', quantity=1000),
+        Line(sku='sku2', quantity=1000),
     ])
     stock = []
 

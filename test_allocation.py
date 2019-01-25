@@ -197,24 +197,23 @@ def test_prefer_allocating_to_earlier_shipment():
 
 
 def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
-    sku1, sku2, sku3 = random_id(), random_id(), random_id()
     order = [
-        OrderLine(sku=sku1, quantity=10),
-        OrderLine(sku=sku2, quantity=10),
-        OrderLine(sku=sku3, quantity=10),
+        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku2', quantity=10),
+        OrderLine(sku='sku3', quantity=10),
     ]
-    shipment1 = Shipment(id=random_id(), eta=date.today(), lines=[
-        Line(sku=sku1, quantity=1000),
+    shipment1 = Shipment(id='shipment1', eta=date.today(), lines=[
+        Line(sku='sku1', quantity=1000),
     ])
     tomorrow = date.today() + timedelta(days=1)
-    shipment2 = Shipment(id=random_id(), eta=tomorrow, lines=[
-        Line(sku=sku2, quantity=1000),
-        Line(sku=sku3, quantity=1000),
+    shipment2 = Shipment(id='shipment2', eta=tomorrow, lines=[
+        Line(sku='sku2', quantity=1000),
+        Line(sku='sku3', quantity=1000),
     ])
     later = tomorrow + timedelta(days=1)
-    shipment3 = Shipment(id=random_id(), eta=later, lines=[
-        Line(sku=sku2, quantity=1000),
-        Line(sku=sku3, quantity=1000),
+    shipment3 = Shipment(id='shipment2', eta=later, lines=[
+        Line(sku='sku2', quantity=1000),
+        Line(sku='sku3', quantity=1000),
     ])
     stock = []
 

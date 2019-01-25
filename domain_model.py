@@ -22,7 +22,7 @@ class Shipment:
 def allocate_to_stock(line, stock):
     for stock_line in stock:
         if stock_line.sku == line.sku:
-            line.allocation = 'warehouse'
+            line.allocation = 'STOCK'
 
 def allocate_to_shipments(line, shipments):
     for shipment in shipments:

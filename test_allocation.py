@@ -16,7 +16,7 @@ def random_id():
     return uuid.uuid4().hex[:10]
 
 
-def test_can_allocate_to_warehouse_stock():
+def test_can_allocate_to_stock():
     sku = random_id()
     order = [
         OrderLine(sku=sku, quantity=10),
@@ -25,7 +25,7 @@ def test_can_allocate_to_warehouse_stock():
 
     allocate(order, stock, shipments=[])
 
-    assert order[0].allocation == 'warehouse'
+    assert order[0].allocation == 'STOCK'
 
 
 def test_can_allocate_to_shipment():
@@ -74,7 +74,7 @@ def test_can_allocate_to_correct_shipment():
     assert order[0].allocation == shipment2.id
 
 
-def test_allocates_to_warehouse_stock_in_preference_to_shipment():
+def test_allocates_to_stock_in_preference_to_shipment():
     sku = random_id()
     order = [
         OrderLine(sku=sku, quantity=10),
@@ -86,7 +86,7 @@ def test_allocates_to_warehouse_stock_in_preference_to_shipment():
 
     allocate(order, stock, shipments=[shipment])
 
-    assert order[0].allocation == 'warehouse'
+    assert order[0].allocation == 'STOCK'
 
 
 def test_can_allocate_multiple_lines_to_wh():
@@ -101,8 +101,8 @@ def test_can_allocate_multiple_lines_to_wh():
     ]
 
     allocate(order, stock, shipments=[])
-    assert order[0].allocation == 'warehouse'
-    assert order[1].allocation == 'warehouse'
+    assert order[0].allocation == 'STOCK'
+    assert order[1].allocation == 'STOCK'
 
 
 def test_can_allocate_multiple_lines_to_shipment():
@@ -135,7 +135,7 @@ def test_can_allocate_to_both():
 
     allocate(order, stock, shipments=[shipment])
 
-    assert order[0].allocation == 'warehouse'
+    assert order[0].allocation == 'STOCK'
     assert order[1].allocation == shipment.id
 
 
@@ -161,6 +161,6 @@ def test_can_allocate_to_both_preferring_stock():
 
     assert order[0].allocation == shipment.id
     assert order[1].allocation == shipment.id
-    assert order[2].allocation == 'warehouse'
-    assert order[3].allocation == 'warehouse'
+    assert order[2].allocation == 'STOCK'
+    assert order[3].allocation == 'STOCK'
 

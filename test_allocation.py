@@ -6,7 +6,6 @@ from domain_model import (
     Line,
     OrderLine,
     Shipment,
-    Stock,
     allocate,
 )
 
@@ -22,9 +21,9 @@ def test_can_allocate_to_warehouse_stock():
     order = [
         OrderLine(sku=sku, quantity=10),
     ]
-    stock = Stock(sku=sku, quantity=1000)
+    stock = [Line(sku=sku, quantity=1000)]
 
-    allocate(order, [stock], shipments=[])
+    allocate(order, stock, shipments=[])
 
     assert order[0].allocation == 'warehouse'
 
@@ -48,12 +47,12 @@ def test_ignores_invalid_stock():
     order = [
         OrderLine(sku=sku1, quantity=10),
     ]
-    stock = Stock(sku=sku2, quantity=1000)
+    stock = [Line(sku=sku2, quantity=1000)]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku1, quantity=1000),
     ])
 
-    allocate(order, stock=[stock], shipments=[shipment])
+    allocate(order, stock=stock, shipments=[shipment])
 
     assert order[0].allocation == shipment.id
 
@@ -80,12 +79,12 @@ def test_allocates_to_warehouse_stock_in_preference_to_shipment():
     order = [
         OrderLine(sku=sku, quantity=10),
     ]
-    stock = Stock(sku=sku, quantity=1000)
+    stock = [Line(sku=sku, quantity=1000)]
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku, quantity=1000),
     ])
 
-    allocate(order, [stock], shipments=[shipment])
+    allocate(order, stock, shipments=[shipment])
 
     assert order[0].allocation == 'warehouse'
 
@@ -97,8 +96,8 @@ def test_can_allocate_multiple_lines_to_wh():
         OrderLine(sku=sku2, quantity=10),
     ]
     stock = [
-        Stock(sku=sku1, quantity=1000),
-        Stock(sku=sku2, quantity=1000),
+        Line(sku=sku1, quantity=1000),
+        Line(sku=sku2, quantity=1000),
     ]
 
     allocate(order, stock, shipments=[])
@@ -132,9 +131,7 @@ def test_can_allocate_to_both():
     shipment = Shipment(id=random_id(), eta=date.today(), lines=[
         Line(sku=sku2, quantity=1000),
     ])
-    stock = [
-        Stock(sku=sku1, quantity=1000),
-    ]
+    stock = [Line(sku=sku1, quantity=1000)]
 
     allocate(order, stock, shipments=[shipment])
 
@@ -156,8 +153,8 @@ def test_can_allocate_to_both_preferring_stock():
         Line(sku=sku3, quantity=1000),
     ])
     stock = [
-        Stock(sku=sku3, quantity=1000),
-        Stock(sku=sku4, quantity=1000),
+        Line(sku=sku3, quantity=1000),
+        Line(sku=sku4, quantity=1000),
     ]
 
     allocate(order, stock, shipments=[shipment])

@@ -13,12 +13,6 @@ class OrderLine(Line):
 
 
 @dataclass
-class Stock:
-    sku: str
-    quantity: int
-
-
-@dataclass
 class Shipment:
     id: str
     eta: date

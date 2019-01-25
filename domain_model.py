@@ -27,20 +27,12 @@ class Shipment:
     lines: list
 
 
-@dataclass
-class Allocation:
-    order_id: str
-    sku: str
-    quantity: int
-    shipment_id: str
-
-
-def allocate_to_stock(order_id, line, stock):
+def allocate_to_stock(line, stock):
     for stock_line in stock:
         if stock_line.sku == line.sku:
             line.allocation = 'warehouse'
 
-def allocate_to_shipments(order_id, line, shipments):
+def allocate_to_shipments(line, shipments):
     for shipment in shipments:
         for shipment_line in shipment.lines:
             if shipment_line.sku == line.sku:
@@ -48,7 +40,7 @@ def allocate_to_shipments(order_id, line, shipments):
 
 def allocate(order, stock, shipments):
     for line in order.lines:
-        allocate_to_stock(order.id, line, stock)
+        allocate_to_stock(line, stock)
         if not line.allocation:
-            allocate_to_shipments(order.id, line, shipments)
+            allocate_to_shipments(line, shipments)
 

@@ -232,3 +232,14 @@ def test_cannot_allocate_if_insufficent_quantity_in_shipment():
 
     assert order[0].allocation is None
 
+
+def test_allocation_decreases_quantity_available_on_shipments():
+    order1 = [OrderLine(sku='a-sku', quantity=10)]
+    order2 = [OrderLine(sku='a-sku', quantity=10)]
+    stock = [Line(sku='a-sku', quantity=15)]
+
+    allocate(order1, stock, shipments=[])
+    allocate(order2, stock, shipments=[])
+
+    assert order2[0].allocation is None
+

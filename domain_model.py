@@ -30,6 +30,7 @@ def allocate_to(line, allocation, quantities):
     for quantity in quantities:
         if quantity.sku == line.sku and quantity.quantity > line.quantity:
             line.allocation = allocation
+            quantity.quantity -= line.quantity
             return
 
 def allocate_to_stock(line, stock):
@@ -51,7 +52,9 @@ def allocate(order, stock, shipments):
         for line in order:
             allocate_to_stock(line, stock)
         return
+
     shipments.sort(key=lambda s: s.eta)
+
     for shipment in shipments:
         if skus(order) <= skus(shipment):
             for line in order:

@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
 
 from domain_model import (
@@ -171,4 +171,55 @@ def test_mixed_allocations_are_avoided_if_possible():
 
     assert order[0].allocation == shipment.id
     assert order[1].allocation == shipment.id
+
+
+def test_prefer_allocating_to_earlier_shipment():
+    sku1, sku2 = random_id(), random_id()
+    order = [
+        OrderLine(sku=sku1, quantity=10),
+        OrderLine(sku=sku2, quantity=10),
+    ]
+    shipment1 = Shipment(id=random_id(), eta=date.today(), lines=[
+        Line(sku=sku1, quantity=1000),
+        Line(sku=sku2, quantity=1000),
+    ])
+    tomorrow = date.today() + timedelta(days=1)
+    shipment2 = Shipment(id=random_id(), eta=tomorrow, lines=[
+        Line(sku=sku1, quantity=1000),
+        Line(sku=sku2, quantity=1000),
+    ])
+    stock = []
+
+    allocate(order, stock, shipments=[shipment2, shipment1])
+
+    assert order[0].allocation == shipment1.id
+    assert order[1].allocation == shipment1.id
+
+
+def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
+    sku1, sku2, sku3 = random_id(), random_id(), random_id()
+    order = [
+        OrderLine(sku=sku1, quantity=10),
+        OrderLine(sku=sku2, quantity=10),
+        OrderLine(sku=sku3, quantity=10),
+    ]
+    shipment1 = Shipment(id=random_id(), eta=date.today(), lines=[
+        Line(sku=sku1, quantity=1000),
+    ])
+    tomorrow = date.today() + timedelta(days=1)
+    shipment2 = Shipment(id=random_id(), eta=tomorrow, lines=[
+        Line(sku=sku2, quantity=1000),
+        Line(sku=sku3, quantity=1000),
+    ])
+    later = tomorrow + timedelta(days=1)
+    shipment3 = Shipment(id=random_id(), eta=later, lines=[
+        Line(sku=sku2, quantity=1000),
+        Line(sku=sku3, quantity=1000),
+    ])
+    stock = []
+
+    allocate(order, stock, shipments=[shipment3, shipment2, shipment1])
+
+    assert order[1].allocation == shipment2.id
+    assert order[2].allocation == shipment2.id
 

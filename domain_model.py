@@ -43,7 +43,7 @@ def allocate(order, stock, shipments):
         for line in order:
             line.allocation = 'STOCK'
         return
-
+    shipments.sort(key=lambda s: s.eta)
     for shipment in shipments:
         if skus(order) <= skus(shipment):
             for line in order:

@@ -12,7 +12,8 @@ def allocate_to(order, source):
     return {
         sku: source
         for sku, quantity in order.items()
-        if source.get(sku, 0) > quantity
+        if sku in source
+        and source[sku] > quantity
     }
 
 

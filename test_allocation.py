@@ -198,6 +198,20 @@ def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
     assert allocations['sku3'] == shipment2
 
 
+def test_stock_not_quite_enough_means_we_use_shipment():
+    order = {'sku1': 10, 'sku2': 10}
+    stock = {'sku1': 10, 'sku2': 5}
+    shipment = Shipment(eta=date.today(), lines={
+        'sku1': 1000,
+        'sku2': 1000,
+    })
+
+    allocations = allocate(order, stock, shipments=[shipment])
+
+    assert allocations['sku1'] == shipment
+    assert allocations['sku2'] == shipment
+
+
 def test_cannot_allocate_if_insufficent_quantity_in_stock():
     order = {'a-sku': 10}
     stock = {'a-sku': 5}

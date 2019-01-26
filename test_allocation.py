@@ -3,7 +3,6 @@ from datetime import date, timedelta
 
 
 from domain_model import (
-    Order,
     Shipment,
     allocate,
 )
@@ -14,7 +13,7 @@ def random_id():
 
 
 def test_can_allocate_to_stock():
-    order = Order({'a-sku': 10})
+    order = {'a-sku': 10}
     stock = {'a-sku': 1000}
 
     allocations = allocate(order, stock, shipments=[])
@@ -24,7 +23,7 @@ def test_can_allocate_to_stock():
 
 
 def test_can_allocate_to_shipment():
-    order = Order({'a-sku': 10})
+    order = {'a-sku': 10}
     shipment = Shipment(id='shipment-id', eta=date.today(), lines={
         'a-sku': 1000
     })
@@ -36,7 +35,7 @@ def test_can_allocate_to_shipment():
 
 
 def test_ignores_irrelevant_stock():
-    order = Order({'sku1': 10})
+    order = {'sku1': 10}
     stock = {'sku2': 1000}
     shipment = Shipment(id='shipment-id', eta=date.today(), lines={
         'sku1': 1000,
@@ -50,7 +49,7 @@ def test_ignores_irrelevant_stock():
 
 
 def test_can_allocate_to_correct_shipment():
-    order = Order({'sku2': 10})
+    order = {'sku2': 10}
     shipment1 = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
     })
@@ -66,7 +65,7 @@ def test_can_allocate_to_correct_shipment():
 
 
 def test_allocates_to_stock_in_preference_to_shipment():
-    order = Order({'sku1': 10})
+    order = {'sku1': 10}
     stock = {'sku1': 1000}
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
@@ -80,7 +79,7 @@ def test_allocates_to_stock_in_preference_to_shipment():
 
 
 def test_can_allocate_multiple_lines_to_wh():
-    order = Order({'sku1': 5, 'sku2': 10})
+    order = {'sku1': 5, 'sku2': 10}
     stock = {'sku1': 1000, 'sku2': 1000}
 
     allocations = allocate(order, stock, shipments=[])
@@ -91,7 +90,7 @@ def test_can_allocate_multiple_lines_to_wh():
 
 
 def test_can_allocate_multiple_lines_to_shipment():
-    order = Order({'sku1': 5, 'sku2': 10})
+    order = {'sku1': 5, 'sku2': 10}
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
         'sku2': 1000,
@@ -106,7 +105,7 @@ def test_can_allocate_multiple_lines_to_shipment():
 
 
 def test_can_allocate_to_both():
-    order = Order({'sku1': 5, 'sku2': 10})
+    order = {'sku1': 5, 'sku2': 10}
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku2': 1000,
     })
@@ -121,7 +120,7 @@ def test_can_allocate_to_both():
 
 
 def test_can_allocate_to_both_preferring_stock():
-    order = Order({'sku1': 1, 'sku2': 2, 'sku3': 3, 'sku4': 4})
+    order = {'sku1': 1, 'sku2': 2, 'sku3': 3, 'sku4': 4}
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
         'sku2': 1000,
@@ -143,7 +142,7 @@ def test_can_allocate_to_both_preferring_stock():
 
 
 def test_mixed_allocations_are_avoided_if_possible():
-    order = Order({'sku1': 10, 'sku2': 10})
+    order = {'sku1': 10, 'sku2': 10}
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
         'sku2': 1000,
@@ -157,7 +156,7 @@ def test_mixed_allocations_are_avoided_if_possible():
 
 
 def test_prefer_allocating_to_earlier_shipment():
-    order = Order({'sku1': 10, 'sku2': 10})
+    order = {'sku1': 10, 'sku2': 10}
     shipment1 = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
         'sku2': 1000,
@@ -176,7 +175,7 @@ def test_prefer_allocating_to_earlier_shipment():
 
 
 def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
-    order = Order({'sku1': 10, 'sku2': 10, 'sku3': 10})
+    order = {'sku1': 10, 'sku2': 10, 'sku3': 10}
     shipment1 = Shipment(id='shipment1', eta=date.today(), lines={
         'sku1': 1000,
     })
@@ -200,7 +199,7 @@ def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_stock():
-    order = Order({'a-sku': 10})
+    order = {'a-sku': 10}
     stock = {'a-sku': 5}
 
     allocations = allocate(order, stock, shipments=[])
@@ -209,7 +208,7 @@ def test_cannot_allocate_if_insufficent_quantity_in_stock():
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_shipment():
-    order = Order({'a-sku': 10})
+    order = {'a-sku': 10}
     shipment = Shipment(id='shipment-id', eta=date.today(), lines={
         'a-sku': 5,
     })
@@ -220,8 +219,8 @@ def test_cannot_allocate_if_insufficent_quantity_in_shipment():
 
 
 def test_cannot_allocate_more_orders_than_we_have_stock_for():
-    order1 = Order({'a-sku': 10})
-    order2 = Order({'a-sku': 10})
+    order1 = {'a-sku': 10}
+    order2 = {'a-sku': 10}
     stock = {'a-sku': 15}
 
     allocations1 = allocate(order1, stock, shipments=[])

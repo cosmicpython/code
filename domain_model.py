@@ -1,9 +1,3 @@
-class Order(dict):
-    def __init__(self, lines):
-        self.allocations = {}
-        super().__init__(lines)
-
-
 class Shipment(dict):
     def __init__(self, id, eta, lines):
         self.id = id

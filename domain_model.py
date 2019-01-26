@@ -1,6 +1,5 @@
 class Shipment(dict):
-    def __init__(self, id, eta, lines):
-        self.id = id
+    def __init__(self, eta, lines):
         self.eta = eta
         super().__init__(lines)
 

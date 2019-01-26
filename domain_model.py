@@ -5,17 +5,15 @@ class Shipment(dict):
         super().__init__(lines)
 
 
-def skus(thing):
-    try:
-        return {line.sku for line in thing}
-    except:
-        return thing.keys()
+def skus(d):
+    return d.keys()
 
 
 def allocate_line(sku, quantity, source, allocations):
     if source.get(sku, 0) > quantity:
         source[sku] -= quantity
         allocations[sku] = getattr(source, 'id', 'STOCK')
+
 
 def allocate_to(order, source):
     allocations = {}

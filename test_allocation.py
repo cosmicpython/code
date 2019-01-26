@@ -28,7 +28,7 @@ def test_can_allocate_to_shipment():
         'a-sku': 1000
     })
 
-    allocations = allocate(order, stock=[], shipments=[shipment])
+    allocations = allocate(order, stock={}, shipments=[shipment])
 
     assert allocations['a-sku'] == shipment.id
     assert shipment['a-sku'] == 990
@@ -57,7 +57,7 @@ def test_can_allocate_to_correct_shipment():
         'sku2': 1000,
     })
 
-    allocations = allocate(order, stock=[], shipments=[shipment1, shipment2])
+    allocations = allocate(order, stock={}, shipments=[shipment1, shipment2])
 
     assert allocations['sku2'] == shipment2.id
     assert shipment1['sku1'] == 1000
@@ -96,7 +96,7 @@ def test_can_allocate_multiple_lines_to_shipment():
         'sku2': 1000,
     })
 
-    allocations = allocate(order, [], shipments=[shipment])
+    allocations = allocate(order, stock={}, shipments=[shipment])
 
     assert allocations['sku1'] == shipment.id
     assert allocations['sku2'] == shipment.id
@@ -213,7 +213,7 @@ def test_cannot_allocate_if_insufficent_quantity_in_shipment():
         'a-sku': 5,
     })
 
-    allocations = allocate(order, stock=[], shipments=[shipment])
+    allocations = allocate(order, stock={}, shipments=[shipment])
 
     assert 'a-sku' not in allocations
 

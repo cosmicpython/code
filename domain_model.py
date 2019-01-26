@@ -1,11 +1,8 @@
-class Shipment(dict):
-    def __init__(self, eta, lines):
-        self.eta = eta
-        super().__init__(lines)
-
-
 def skus(d):
     return set(d.keys())
+
+def allocated_completely(order, allocation):
+    return skus(order) == skus(allocation)
 
 
 def allocate_to(order, source):
@@ -19,15 +16,13 @@ def allocate_to(order, source):
 
 def allocate(order, stock, shipments):
     stock_allocation = allocate_to(order, stock)
-    if skus(stock_allocation) == skus(order):
+    if allocated_completely(order, stock_allocation):
         return stock_allocation
-
-    shipments.sort(key=lambda s: s.eta)
 
     shipment_allocations = []
     for shipment in shipments:
         shipment_allocation = allocate_to(order, shipment)
-        if skus(shipment_allocation) == skus(order):
+        if allocated_completely(order, shipment_allocation):
             return shipment_allocation
         shipment_allocations.append(shipment_allocation)
 

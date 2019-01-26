@@ -10,7 +10,6 @@ def skus(d):
 
 def allocate_line(sku, quantity, source, allocations):
     if source.get(sku, 0) > quantity:
-        source[sku] -= quantity
         allocations[sku] = source
 
 

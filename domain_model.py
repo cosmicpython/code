@@ -1,19 +1,12 @@
 from dataclasses import dataclass
 
 @dataclass
-class Line:
-    sku: str
-    quantity: int
+class Order(dict):
+    def __init__(self, d):
+        self.allocations = {}
+        super().__init__(d)
 
 
-
-
-@dataclass
-class OrderLine(Line):
-    allocation: str = None
-
-
-@dataclass
 class Shipment(dict):
     def __init__(self, id, eta, lines):
         self.id = id
@@ -28,32 +21,31 @@ def skus(thing):
         return thing.keys()
 
 
-def allocate_to(line, allocation, source):
-    if source.get(line.sku, 0) > line.quantity:
-        line.allocation = allocation
-        source[line.sku] -= line.quantity
+def allocate_to(order, source, name):
+    for sku, quantity in order.items():
+        if source.get(sku, 0) > quantity:
+            source[sku] -= quantity
+            order.allocations[sku] = name
 
 
 def allocate_to_stock(order, stock):
-    for line in order:
-        allocate_to(line, 'STOCK', stock)
-
+    allocate_to(order, stock, 'STOCK')
 
 def allocate_to_shipment(order, shipment):
-    for line in order:
-        allocate_to(line, shipment.id, shipment)
+    allocate_to(order, shipment, shipment.id)
+
+
 
 
 def allocate_to_shipments(order, shipments):
-    for line in order:
-        _allocate_line_to_shipments(line, shipments)
-
-
-def _allocate_line_to_shipments(line, shipments):
-    for shipment in shipments:
-        allocate_to(line, shipment.id, shipment)
-        if line.allocation:
-            return
+    for sku, quantity in order.items():
+        if sku in order.allocations:
+            continue
+        for shipment in shipments:
+            if shipment.get(sku, 0) > quantity:
+                shipment[sku] -= quantity
+                order.allocations[sku] = shipment.id
+                break
 
 
 def allocate(order, stock, shipments):
@@ -68,5 +60,5 @@ def allocate(order, stock, shipments):
             allocate_to_shipment(order, shipment)
             return
 
-    allocate_to_shipments(order, shipments)
     allocate_to_stock(order, stock)
+    allocate_to_shipments(order, shipments)

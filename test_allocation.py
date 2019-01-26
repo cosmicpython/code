@@ -3,7 +3,6 @@ from datetime import date, timedelta
 
 
 from domain_model import (
-    Line,
     OrderLine,
     Shipment,
     allocate,
@@ -18,12 +17,12 @@ def random_id():
 
 def test_can_allocate_to_stock():
     order = [OrderLine(sku='a-sku', quantity=10)]
-    stock = [Line(sku='a-sku', quantity=1000)]
+    stock = {'a-sku': 1000}
 
     allocate(order, stock, shipments=[])
 
     assert order[0].allocation == 'STOCK'
-    assert stock[0].quantity == 990
+    assert stock['a-sku'] == 990
 
 
 def test_can_allocate_to_shipment():
@@ -38,9 +37,9 @@ def test_can_allocate_to_shipment():
     assert shipment['a-sku'] == 990
 
 
-def test_ignores_invalid_stock():
+def test_ignores_irrelevant_stock():
     order = [OrderLine(sku='sku1', quantity=10), ]
-    stock = [Line(sku='sku2', quantity=1000)]
+    stock = {'sku2': 1000}
     shipment = Shipment(id='shipment-id', eta=date.today(), lines={
         'sku1': 1000,
     })
@@ -48,7 +47,7 @@ def test_ignores_invalid_stock():
     allocate(order, stock=stock, shipments=[shipment])
 
     assert order[0].allocation == shipment.id
-    assert stock[0].quantity == 1000
+    assert stock['sku2'] == 1000
     assert shipment['sku1'] == 990
 
 
@@ -70,7 +69,7 @@ def test_can_allocate_to_correct_shipment():
 
 def test_allocates_to_stock_in_preference_to_shipment():
     order = [OrderLine(sku='sku1', quantity=10)]
-    stock = [Line(sku='sku1', quantity=1000)]
+    stock = {'sku1': 1000}
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku1': 1000,
     })
@@ -78,7 +77,7 @@ def test_allocates_to_stock_in_preference_to_shipment():
     allocate(order, stock, shipments=[shipment])
 
     assert order[0].allocation == 'STOCK'
-    assert stock[0].quantity == 990
+    assert stock['sku1'] == 990
     assert shipment['sku1'] == 1000
 
 
@@ -87,16 +86,13 @@ def test_can_allocate_multiple_lines_to_wh():
         OrderLine(sku='sku1', quantity=5),
         OrderLine(sku='sku2', quantity=10),
     ]
-    stock = [
-        Line(sku='sku1', quantity=1000),
-        Line(sku='sku2', quantity=1000),
-    ]
+    stock = {'sku1': 1000, 'sku2': 1000}
 
     allocate(order, stock, shipments=[])
     assert order[0].allocation == 'STOCK'
     assert order[1].allocation == 'STOCK'
-    assert stock[0].quantity == 995
-    assert stock[1].quantity == 990
+    assert stock['sku1'] == 995
+    assert stock['sku2'] == 990
 
 
 def test_can_allocate_multiple_lines_to_shipment():
@@ -125,13 +121,13 @@ def test_can_allocate_to_both():
     shipment = Shipment('shipment1', eta=date.today(), lines={
         'sku2': 1000,
     })
-    stock = [Line(sku='sku1', quantity=1000)]
+    stock = {'sku1': 1000}
 
     allocate(order, stock, shipments=[shipment])
 
     assert order[0].allocation == 'STOCK'
     assert order[1].allocation == shipment.id
-    assert stock[0].quantity == 995
+    assert stock['sku1'] == 995
     assert shipment['sku2'] == 990
 
 
@@ -147,10 +143,7 @@ def test_can_allocate_to_both_preferring_stock():
         'sku2': 1000,
         'sku3': 1000,
     })
-    stock = [
-        Line(sku='sku3', quantity=1000),
-        Line(sku='sku4', quantity=1000),
-    ]
+    stock = {'sku3': 1000, 'sku4': 1000}
 
     allocate(order, stock, shipments=[shipment])
 
@@ -161,8 +154,8 @@ def test_can_allocate_to_both_preferring_stock():
     assert shipment['sku1'] == 999
     assert shipment['sku2'] == 998
     assert shipment['sku3'] == 1000
-    assert stock[0].quantity == 997
-    assert stock[1].quantity == 996
+    assert stock['sku3'] == 997
+    assert stock['sku4'] == 996
 
 
 def test_mixed_allocations_are_avoided_if_possible():
@@ -174,7 +167,7 @@ def test_mixed_allocations_are_avoided_if_possible():
         'sku1': 1000,
         'sku2': 1000,
     })
-    stock = [Line(sku='sku1', quantity=1000)]
+    stock = {'sku1': 1000}
 
     allocate(order, stock, shipments=[shipment])
 
@@ -196,7 +189,7 @@ def test_prefer_allocating_to_earlier_shipment():
         'sku1': 1000,
         'sku2': 1000,
     })
-    stock = []
+    stock = {}
 
     allocate(order, stock, shipments=[shipment2, shipment1])
 
@@ -233,7 +226,7 @@ def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
 
 def test_cannot_allocate_if_insufficent_quantity_in_stock():
     order = [OrderLine(sku='a-sku', quantity=10)]
-    stock = [Line(sku='a-sku', quantity=5)]
+    stock = {'a-sku': 5}
 
     allocate(order, stock, shipments=[])
 
@@ -254,7 +247,7 @@ def test_cannot_allocate_if_insufficent_quantity_in_shipment():
 def test_cannot_allocate_more_orders_than_we_have_stock_for():
     order1 = [OrderLine(sku='a-sku', quantity=10)]
     order2 = [OrderLine(sku='a-sku', quantity=10)]
-    stock = [Line(sku='a-sku', quantity=15)]
+    stock = {'a-sku': 15}
 
     allocate(order1, stock, shipments=[])
     allocate(order2, stock, shipments=[])

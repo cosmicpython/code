@@ -216,7 +216,7 @@ def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
         'sku2': 1000,
         'sku3': 1000,
     })
-    stock = []
+    stock = {}
 
     allocate(order, stock, shipments=[shipment3, shipment2, shipment1])
 

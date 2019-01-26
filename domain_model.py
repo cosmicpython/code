@@ -29,17 +29,10 @@ def skus(thing):
 
 
 def allocate_to(line, allocation, source):
-    try:
-        if source.get(line.sku, 0) > line.quantity:
-            line.allocation = allocation
-            source[line.sku] -= line.quantity
+    if source.get(line.sku, 0) > line.quantity:
+        line.allocation = allocation
+        source[line.sku] -= line.quantity
 
-    except AttributeError:
-        for source_line in source:
-            if source_line.sku == line.sku and source_line.quantity > line.quantity:
-                line.allocation = allocation
-                source_line.quantity -= line.quantity
-                return
 
 def allocate_to_stock(order, stock):
     for line in order:

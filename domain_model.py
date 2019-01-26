@@ -9,11 +9,11 @@ def skus(d):
 
 
 def allocate_to(order, source):
-    allocations = {}
-    for sku, quantity in order.items():
-        if source.get(sku, 0) > quantity:
-            allocations[sku] = source
-    return allocations
+    return {
+        sku: source
+        for sku, quantity in order.items()
+        if source.get(sku, 0) > quantity
+    }
 
 
 def allocate(order, stock, shipments):

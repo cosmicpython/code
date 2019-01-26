@@ -24,7 +24,8 @@ def allocate_to(order, source):
     return allocations
 
 
-def allocate_to_sources(order, sources, allocations):
+def allocate_to_sources(order, sources):
+    allocations = {}
     for sku, quantity in order.items():
         if sku in allocations:
             continue
@@ -32,6 +33,7 @@ def allocate_to_sources(order, sources, allocations):
             allocate_line(sku, quantity, source, allocations)
             if sku in allocations:
                 break
+    return allocations
 
 
 
@@ -45,6 +47,4 @@ def allocate(order, stock, shipments):
         if skus(order) <= skus(shipment):
             return allocate_to(order, shipment)
 
-    allocations = {}
-    allocate_to_sources(order, [stock] + shipments, allocations)
-    return allocations
+    return allocate_to_sources(order, [stock] + shipments)

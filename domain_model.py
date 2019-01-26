@@ -8,37 +8,30 @@ def skus(d):
     return d.keys()
 
 
-def allocate_line(sku, quantity, source, allocations):
-    if source.get(sku, 0) > quantity:
-        allocations[sku] = source
-
-
 def allocate_to(order, source):
     allocations = {}
     for sku, quantity in order.items():
-        allocate_line(sku, quantity, source, allocations)
+        if source.get(sku, 0) > quantity:
+            allocations[sku] = source
     return allocations
-
-
-def allocate_to_sources(order, sources):
-    allocations = {}
-    for sku, quantity in order.items():
-        for source in sources:
-            allocate_line(sku, quantity, source, allocations)
-            if sku in allocations:
-                break
-    return allocations
-
 
 
 def allocate(order, stock, shipments):
-    if skus(order) <= skus(stock):
-        return allocate_to(order, stock)
+    stock_allocation = allocate_to(order, stock)
+    if set(stock_allocation) == set(order):
+        return stock_allocation
 
     shipments.sort(key=lambda s: s.eta)
 
+    shipment_allocations = []
     for shipment in shipments:
-        if skus(order) <= skus(shipment):
-            return allocate_to(order, shipment)
+        shipment_allocation = allocate_to(order, shipment)
+        if set(shipment_allocation) == set(order):
+            return shipment_allocation
+        shipment_allocations.append(shipment_allocation)
 
-    return allocate_to_sources(order, [stock] + shipments)
+    mixed_allocation = {}
+    for allocation in shipment_allocations + [stock_allocation]:
+        mixed_allocation.update(allocation)
+    return mixed_allocation
+

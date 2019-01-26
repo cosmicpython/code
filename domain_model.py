@@ -27,8 +27,6 @@ def allocate_to(order, source):
 def allocate_to_sources(order, sources):
     allocations = {}
     for sku, quantity in order.items():
-        if sku in allocations:
-            continue
         for source in sources:
             allocate_line(sku, quantity, source, allocations)
             if sku in allocations:

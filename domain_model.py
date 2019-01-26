@@ -5,7 +5,7 @@ class Shipment(dict):
 
 
 def skus(d):
-    return d.keys()
+    return set(d.keys())
 
 
 def allocate_to(order, source):
@@ -18,7 +18,7 @@ def allocate_to(order, source):
 
 def allocate(order, stock, shipments):
     stock_allocation = allocate_to(order, stock)
-    if set(stock_allocation) == set(order):
+    if skus(stock_allocation) == skus(order):
         return stock_allocation
 
     shipments.sort(key=lambda s: s.eta)
@@ -26,7 +26,7 @@ def allocate(order, stock, shipments):
     shipment_allocations = []
     for shipment in shipments:
         shipment_allocation = allocate_to(order, shipment)
-        if set(shipment_allocation) == set(order):
+        if skus(shipment_allocation) == skus(order):
             return shipment_allocation
         shipment_allocations.append(shipment_allocation)
 

@@ -1,10 +1,7 @@
-from dataclasses import dataclass
-
-@dataclass
 class Order(dict):
-    def __init__(self, d):
+    def __init__(self, lines):
         self.allocations = {}
-        super().__init__(d)
+        super().__init__(lines)
 
 
 class Shipment(dict):
@@ -21,20 +18,11 @@ def skus(thing):
         return thing.keys()
 
 
-def allocate_to(order, source, name):
+def allocate_to(order, source):
     for sku, quantity in order.items():
         if source.get(sku, 0) > quantity:
             source[sku] -= quantity
-            order.allocations[sku] = name
-
-
-def allocate_to_stock(order, stock):
-    allocate_to(order, stock, 'STOCK')
-
-def allocate_to_shipment(order, shipment):
-    allocate_to(order, shipment, shipment.id)
-
-
+            order.allocations[sku] = getattr(source, 'id', 'STOCK')
 
 
 def allocate_to_shipments(order, shipments):
@@ -50,15 +38,15 @@ def allocate_to_shipments(order, shipments):
 
 def allocate(order, stock, shipments):
     if skus(order) <= skus(stock):
-        allocate_to_stock(order, stock)
+        allocate_to(order, stock)
         return
 
     shipments.sort(key=lambda s: s.eta)
 
     for shipment in shipments:
         if skus(order) <= skus(shipment):
-            allocate_to_shipment(order, shipment)
+            allocate_to(order, shipment)
             return
 
-    allocate_to_stock(order, stock)
+    allocate_to(order, stock)
     allocate_to_shipments(order, shipments)

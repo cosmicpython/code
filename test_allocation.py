@@ -9,8 +9,6 @@ from domain_model import (
 )
 
 
-
-
 def random_id():
     return uuid.uuid4().hex[:10]
 

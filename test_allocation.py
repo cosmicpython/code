@@ -1,12 +1,4 @@
-import uuid
-from datetime import date, timedelta
-
-
 from domain_model import allocate
-
-
-def random_id():
-    return uuid.uuid4().hex[:10]
 
 
 def test_can_allocate_to_stock():

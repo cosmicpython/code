@@ -6,13 +6,15 @@ class Line:
     quantity: int
 
 
+
+
 @dataclass
 class OrderLine(Line):
     allocation: str = None
 
 
 @dataclass
-class Shipment(list):
+class Shipment(dict):
     def __init__(self, id, eta, lines):
         self.id = id
         self.eta = eta
@@ -20,15 +22,24 @@ class Shipment(list):
 
 
 def skus(thing):
-    return {line.sku for line in thing}
+    try:
+        return {line.sku for line in thing}
+    except:
+        return thing.keys()
 
 
 def allocate_to(line, allocation, source):
-    for source_line in source:
-        if source_line.sku == line.sku and source_line.quantity > line.quantity:
+    try:
+        if source.get(line.sku, 0) > line.quantity:
             line.allocation = allocation
-            source_line.quantity -= line.quantity
-            return
+            source[line.sku] -= line.quantity
+
+    except AttributeError:
+        for source_line in source:
+            if source_line.sku == line.sku and source_line.quantity > line.quantity:
+                line.allocation = allocation
+                source_line.quantity -= line.quantity
+                return
 
 def allocate_to_stock(order, stock):
     for line in order:

@@ -18,7 +18,7 @@ def test_can_allocate_to_stock():
 
     allocations = allocate(order, stock, shipments=[])
 
-    assert allocations['a-sku'] == 'STOCK'
+    assert allocations['a-sku'] == stock
     assert stock['a-sku'] == 990
 
 
@@ -30,7 +30,7 @@ def test_can_allocate_to_shipment():
 
     allocations = allocate(order, stock={}, shipments=[shipment])
 
-    assert allocations['a-sku'] == shipment.id
+    assert allocations['a-sku'] == shipment
     assert shipment['a-sku'] == 990
 
 
@@ -43,7 +43,7 @@ def test_ignores_irrelevant_stock():
 
     allocations = allocate(order, stock=stock, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment.id
+    assert allocations['sku1'] == shipment
     assert stock['sku2'] == 1000
     assert shipment['sku1'] == 990
 
@@ -59,7 +59,7 @@ def test_can_allocate_to_correct_shipment():
 
     allocations = allocate(order, stock={}, shipments=[shipment1, shipment2])
 
-    assert allocations['sku2'] == shipment2.id
+    assert allocations['sku2'] == shipment2
     assert shipment1['sku1'] == 1000
     assert shipment2['sku2'] == 990
 
@@ -73,7 +73,7 @@ def test_allocates_to_stock_in_preference_to_shipment():
 
     allocations = allocate(order, stock, shipments=[shipment])
 
-    assert allocations['sku1'] == 'STOCK'
+    assert allocations['sku1'] == stock
     assert stock['sku1'] == 990
     assert shipment['sku1'] == 1000
 
@@ -83,8 +83,8 @@ def test_can_allocate_multiple_lines_to_wh():
     stock = {'sku1': 1000, 'sku2': 1000}
 
     allocations = allocate(order, stock, shipments=[])
-    assert allocations['sku1'] == 'STOCK'
-    assert allocations['sku2'] == 'STOCK'
+    assert allocations['sku1'] == stock
+    assert allocations['sku2'] == stock
     assert stock['sku1'] == 995
     assert stock['sku2'] == 990
 
@@ -98,8 +98,8 @@ def test_can_allocate_multiple_lines_to_shipment():
 
     allocations = allocate(order, stock={}, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment.id
-    assert allocations['sku2'] == shipment.id
+    assert allocations['sku1'] == shipment
+    assert allocations['sku2'] == shipment
     assert shipment['sku1'] == 995
     assert shipment['sku2'] == 990
 
@@ -113,8 +113,8 @@ def test_can_allocate_to_both():
 
     allocations = allocate(order, stock, shipments=[shipment])
 
-    assert allocations['sku1'] == 'STOCK'
-    assert allocations['sku2'] == shipment.id
+    assert allocations['sku1'] == stock
+    assert allocations['sku2'] == shipment
     assert stock['sku1'] == 995
     assert shipment['sku2'] == 990
 
@@ -130,10 +130,10 @@ def test_can_allocate_to_both_preferring_stock():
 
     allocations = allocate(order, stock, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment.id
-    assert allocations['sku2'] == shipment.id
-    assert allocations['sku3'] == 'STOCK'
-    assert allocations['sku4'] == 'STOCK'
+    assert allocations['sku1'] == shipment
+    assert allocations['sku2'] == shipment
+    assert allocations['sku3'] == stock
+    assert allocations['sku4'] == stock
     assert shipment['sku1'] == 999
     assert shipment['sku2'] == 998
     assert shipment['sku3'] == 1000
@@ -151,8 +151,8 @@ def test_mixed_allocations_are_avoided_if_possible():
 
     allocations = allocate(order, stock, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment.id
-    assert allocations['sku2'] == shipment.id
+    assert allocations['sku1'] == shipment
+    assert allocations['sku2'] == shipment
 
 
 def test_prefer_allocating_to_earlier_shipment():
@@ -170,8 +170,8 @@ def test_prefer_allocating_to_earlier_shipment():
 
     allocations = allocate(order, stock, shipments=[shipment2, shipment1])
 
-    assert allocations['sku1'] == shipment1.id
-    assert allocations['sku2'] == shipment1.id
+    assert allocations['sku1'] == shipment1
+    assert allocations['sku2'] == shipment1
 
 
 def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
@@ -193,9 +193,9 @@ def test_prefer_allocating_to_earlier_even_if_multiple_shipments():
 
     allocations = allocate(order, stock, shipments=[shipment3, shipment2, shipment1])
 
-    assert allocations['sku1'] == shipment1.id
-    assert allocations['sku2'] == shipment2.id
-    assert allocations['sku3'] == shipment2.id
+    assert allocations['sku1'] == shipment1
+    assert allocations['sku2'] == shipment2
+    assert allocations['sku3'] == shipment2
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_stock():

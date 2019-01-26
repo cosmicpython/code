@@ -23,6 +23,7 @@ def test_can_allocate_to_stock():
     allocate(order, stock, shipments=[])
 
     assert order[0].allocation == 'STOCK'
+    assert stock[0].quantity == 990
 
 
 def test_can_allocate_to_shipment():
@@ -34,6 +35,7 @@ def test_can_allocate_to_shipment():
     allocate(order, stock=[], shipments=[shipment])
 
     assert order[0].allocation == shipment.id
+    assert shipment[0].quantity == 990
 
 
 def test_ignores_invalid_stock():
@@ -46,6 +48,8 @@ def test_ignores_invalid_stock():
     allocate(order, stock=stock, shipments=[shipment])
 
     assert order[0].allocation == shipment.id
+    assert stock[0].quantity == 1000
+    assert shipment[0].quantity == 990
 
 
 def test_can_allocate_to_correct_shipment():
@@ -60,6 +64,8 @@ def test_can_allocate_to_correct_shipment():
     allocate(order, stock=[], shipments=[shipment1, shipment2])
 
     assert order[0].allocation == shipment2.id
+    assert shipment1[0].quantity == 1000
+    assert shipment2[0].quantity == 990
 
 
 def test_allocates_to_stock_in_preference_to_shipment():
@@ -73,11 +79,13 @@ def test_allocates_to_stock_in_preference_to_shipment():
     allocate(order, stock, shipments=[shipment])
 
     assert order[0].allocation == 'STOCK'
+    assert stock[0].quantity == 990
+    assert shipment[0].quantity == 1000
 
 
 def test_can_allocate_multiple_lines_to_wh():
     order = [
-        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku1', quantity=5),
         OrderLine(sku='sku2', quantity=10),
     ]
     stock = [
@@ -88,11 +96,13 @@ def test_can_allocate_multiple_lines_to_wh():
     allocate(order, stock, shipments=[])
     assert order[0].allocation == 'STOCK'
     assert order[1].allocation == 'STOCK'
+    assert stock[0].quantity == 995
+    assert stock[1].quantity == 990
 
 
 def test_can_allocate_multiple_lines_to_shipment():
     order = [
-        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku1', quantity=5),
         OrderLine(sku='sku2', quantity=10),
     ]
     shipment = Shipment('shipment1', eta=date.today(), lines=[
@@ -104,11 +114,13 @@ def test_can_allocate_multiple_lines_to_shipment():
 
     assert order[0].allocation == shipment.id
     assert order[1].allocation == shipment.id
+    assert shipment[0].quantity == 995
+    assert shipment[1].quantity == 990
 
 
 def test_can_allocate_to_both():
     order = [
-        OrderLine(sku='sku1', quantity=10),
+        OrderLine(sku='sku1', quantity=5),
         OrderLine(sku='sku2', quantity=10),
     ]
     shipment = Shipment('shipment1', eta=date.today(), lines=[
@@ -120,14 +132,16 @@ def test_can_allocate_to_both():
 
     assert order[0].allocation == 'STOCK'
     assert order[1].allocation == shipment.id
+    assert stock[0].quantity == 995
+    assert shipment[0].quantity == 990
 
 
 def test_can_allocate_to_both_preferring_stock():
     order = [
-        OrderLine(sku='sku1', quantity=10),
-        OrderLine(sku='sku2', quantity=10),
-        OrderLine(sku='sku3', quantity=10),
-        OrderLine(sku='sku4', quantity=10),
+        OrderLine(sku='sku1', quantity=1),
+        OrderLine(sku='sku2', quantity=2),
+        OrderLine(sku='sku3', quantity=3),
+        OrderLine(sku='sku4', quantity=4),
     ]
     shipment = Shipment('shipment1', eta=date.today(), lines=[
         Line(sku='sku1', quantity=1000),
@@ -145,6 +159,12 @@ def test_can_allocate_to_both_preferring_stock():
     assert order[1].allocation == shipment.id
     assert order[2].allocation == 'STOCK'
     assert order[3].allocation == 'STOCK'
+    assert shipment[0].quantity == 999
+    assert shipment[1].quantity == 998
+    assert shipment[2].quantity == 1000
+    assert shipment[3].quantity == 1000
+    assert stock[0].quantity == 997
+    assert stock[1].quantity == 996
 
 
 def test_mixed_allocations_are_avoided_if_possible():
@@ -233,7 +253,7 @@ def test_cannot_allocate_if_insufficent_quantity_in_shipment():
     assert order[0].allocation is None
 
 
-def test_allocation_decreases_quantity_available_on_shipments():
+def test_cannot_allocate_more_orders_than_we_have_stock_for():
     order1 = [OrderLine(sku='a-sku', quantity=10)]
     order2 = [OrderLine(sku='a-sku', quantity=10)]
     stock = [Line(sku='a-sku', quantity=15)]

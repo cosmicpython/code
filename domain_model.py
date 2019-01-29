@@ -14,13 +14,17 @@ class Order:
     def allocate(self, stock, shipments):
         self.allocations = {}
         for source in [stock] + shipments:
-            self.allocations.update({
-                key: stock
+            allocation = {
+                key: source
                 for key in self.lines
                 if key in source.lines
-            })
-            if self.fully_allocated:
+                and source.lines[key] > self.lines[key]
+            }
+            if set(allocation.keys()) == set(self.lines):
+                self.allocations = allocation
                 return
+            allocation.update(self.allocations)
+            self.allocations = allocation
 
 
 @dataclass

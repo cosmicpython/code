@@ -130,15 +130,14 @@ def test_still_preserves_ordering_if_split_across_shipments():
     assert order.allocations['sku2'] == shipment2
     assert order.allocations['sku3'] == shipment2
 
-'''
 
 def test_stock_not_quite_enough_means_we_use_shipment():
     order = Order({'sku1': 10, 'sku2': 10})
     stock = Stock({'sku1': 10, 'sku2': 5})
-    shipment = Stock({)
+    shipment = Stock({
         'sku1': 1000,
         'sku2': 1000,
-    }
+    })
 
     order.allocate(stock, shipments=[shipment])
 
@@ -157,12 +156,11 @@ def test_cannot_allocate_if_insufficent_quantity_in_stock():
 
 def test_cannot_allocate_if_insufficent_quantity_in_shipment():
     order = Order({'a-sku': 10})
-    shipment = Stock({)
+    shipment = Stock({
         'a-sku': 5,
-    }
+    })
 
     order.allocate(stock=Stock({}), shipments=[shipment])
 
     assert 'a-sku' not in order.allocations
 
-'''

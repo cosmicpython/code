@@ -13,6 +13,7 @@ def test_can_allocate_to_stock():
     order.allocate(stock, shipments=[])
 
     assert order.allocation['a-sku'] == stock
+    assert stock['a-sku'] == 990
 
 
 def test_can_allocate_to_shipment():
@@ -22,6 +23,7 @@ def test_can_allocate_to_shipment():
     order.allocate(stock=Stock({}), shipments=[shipment])
 
     assert order.allocation['a-sku'] == shipment
+    assert shipment['a-sku'] == 990
 
 
 def test_ignores_irrelevant_stock():
@@ -53,6 +55,8 @@ def test_allocates_to_stock_in_preference_to_shipment():
     order.allocate(stock, shipments=[shipment])
 
     assert order.allocation['sku1'] == stock
+    assert stock['sku1'] == 990
+    assert shipment['sku1'] == 1000
 
 
 def test_can_allocate_multiple_lines_to_wh():
@@ -62,6 +66,8 @@ def test_can_allocate_multiple_lines_to_wh():
     order.allocate(stock, shipments=[])
     assert order.allocation['sku1'] == stock
     assert order.allocation['sku2'] == stock
+    assert stock['sku1'] == 995
+    assert stock['sku2'] == 990
 
 
 def test_can_allocate_multiple_lines_to_shipment():
@@ -72,6 +78,8 @@ def test_can_allocate_multiple_lines_to_shipment():
 
     assert order.allocation['sku1'] == shipment
     assert order.allocation['sku2'] == shipment
+    assert shipment['sku1'] == 995
+    assert shipment['sku2'] == 990
 
 
 def test_can_allocate_to_both():
@@ -83,6 +91,8 @@ def test_can_allocate_to_both():
 
     assert order.allocation['sku1'] == stock
     assert order.allocation['sku2'] == shipment
+    assert stock['sku1'] == 995
+    assert shipment['sku2'] == 990
 
 
 def test_can_allocate_to_both_preferring_stock():
@@ -96,6 +106,11 @@ def test_can_allocate_to_both_preferring_stock():
     assert order.allocation['sku2'] == shipment
     assert order.allocation['sku3'] == stock
     assert order.allocation['sku4'] == stock
+    assert shipment['sku1'] == 999
+    assert shipment['sku2'] == 998
+    assert shipment['sku3'] == 1000
+    assert stock['sku3'] == 997
+    assert stock['sku4'] == 996
 
 
 def test_mixed_allocation_are_avoided_if_possible():

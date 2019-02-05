@@ -1,11 +1,16 @@
 from dataclasses import dataclass
-from datetime import date
 
 class Allocation(dict):
 
     @property
     def skus(self):
         return self.keys()
+
+    def supplement_with(self, allocation):
+        for sku, quantity in allocation.items():
+            if sku in self:
+                continue
+            self[sku] = quantity
 
 
 @dataclass
@@ -23,18 +28,17 @@ class Order:
 
 
     def allocate(self, stock, shipments):
-        self.allocation = {}
+        self.allocation = Allocation()
         for source in [stock] + sorted(shipments, key=lambda x: x.eta):
-            allocation = Allocation({
+            source_allocation = Allocation({
                 sku: source
                 for sku, quantity in self.lines.items()
                 if source.can_allocate(sku, quantity)
             })
-            if allocation.skus == self.skus:
-                self.allocation = allocation
+            if source_allocation.skus == self.skus:
+                self.allocation = source_allocation
                 return
-            allocation.update(self.allocation)
-            self.allocation = allocation
+            self.allocation.supplement_with(source_allocation)
 
 
 class Stock(dict):

@@ -15,10 +15,9 @@ class Order:
         self.allocations = {}
         for source in [stock] + shipments:
             allocation = {
-                key: source
-                for key in self.lines
-                if key in source.lines
-                and source.lines[key] > self.lines[key]
+                sku: source
+                for sku, quantity in self.lines.items()
+                if source.can_allocate(sku, quantity)
             }
             if set(allocation.keys()) == set(self.lines):
                 self.allocations = allocation
@@ -31,5 +30,8 @@ class Order:
 class Stock:
     lines: dict
     eta: date = None
+
+    def can_allocate(self, sku, quantity):
+        return sku in self.lines and self.lines[sku] > quantity
 
 

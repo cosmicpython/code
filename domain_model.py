@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 class Allocation(dict):
 
     @property
@@ -10,7 +8,7 @@ class Allocation(dict):
     def for_(order, source):
         return Allocation({
             sku: source
-            for sku, quantity in order.lines.items()
+            for sku, quantity in order.items()
             if source.can_allocate(sku, quantity)
         })
 
@@ -27,14 +25,11 @@ class Allocation(dict):
 
 
 
-@dataclass
-class Order:
-    lines: dict
-    allocation: Allocation = None
+class Order(dict):
 
     @property
     def skus(self):
-        return self.lines.keys()
+        return self.keys()
 
     @property
     def fully_allocated(self):

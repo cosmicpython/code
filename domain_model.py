@@ -60,6 +60,3 @@ class Shipment(Stock):
         self.eta = eta
         super().__init__(lines)
 
-    def can_allocate(self, sku, quantity):
-        return sku in self and self[sku] > quantity
-

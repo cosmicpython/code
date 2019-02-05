@@ -24,7 +24,7 @@ class Order:
 
     def allocate(self, stock, shipments):
         self.allocation = {}
-        for source in [stock] + shipments:
+        for source in [stock] + sorted(shipments, key=lambda x: x.eta):
             allocation = Allocation({
                 sku: source
                 for sku, quantity in self.lines.items()

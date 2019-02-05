@@ -37,11 +37,19 @@ class Order:
             self.allocation = allocation
 
 
-@dataclass
-class Stock:
-    lines: dict
-    eta: date = None
+class Stock(dict):
 
     def can_allocate(self, sku, quantity):
-        return sku in self.lines and self.lines[sku] > quantity
+        return sku in self and self[sku] > quantity
+
+
+@dataclass
+class Shipment(Stock):
+
+    def __init__(self, lines, eta):
+        self.eta = eta
+        super().__init__(lines)
+
+    def can_allocate(self, sku, quantity):
+        return sku in self and self[sku] > quantity
 

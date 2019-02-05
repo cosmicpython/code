@@ -11,7 +11,7 @@ class Allocation(dict):
 @dataclass
 class Order:
     lines: dict
-    allocations: dict = None
+    allocation: Allocation = None
 
     @property
     def skus(self):
@@ -19,11 +19,11 @@ class Order:
 
     @property
     def fully_allocated(self):
-        return self.allocations.skus == self.skus
+        return self.allocation.skus == self.skus
 
 
     def allocate(self, stock, shipments):
-        self.allocations = {}
+        self.allocation = {}
         for source in [stock] + shipments:
             allocation = Allocation({
                 sku: source
@@ -31,10 +31,10 @@ class Order:
                 if source.can_allocate(sku, quantity)
             })
             if allocation.skus == self.skus:
-                self.allocations = allocation
+                self.allocation = allocation
                 return
-            allocation.update(self.allocations)
-            self.allocations = allocation
+            allocation.update(self.allocation)
+            self.allocation = allocation
 
 
 @dataclass

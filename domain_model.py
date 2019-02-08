@@ -69,6 +69,7 @@ class Shipment(Stock):
 @dataclass
 class AllocationLine:
     sku: str
+    quantity: int
     source: Stock
 
 
@@ -89,7 +90,7 @@ class Allocation:
     def for_(order: Order, source: Stock):
         return Allocation(
             lines=[
-                AllocationLine(sku=line.sku, source=source) for line in order.lines
+                AllocationLine(sku=line.sku, quantity=line.quantity, source=source) for line in order.lines
                 if source.can_allocate(line)
             ],
             order=order
@@ -106,5 +107,5 @@ class Allocation:
 
     def apply(self):
         for line in self.lines:
-            line.source.allocate(line.sku, self.order.quantities[line.sku])
+            line.source.allocate(line.sku, line.quantity)
 

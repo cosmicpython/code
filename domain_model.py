@@ -1,9 +1,11 @@
-def skus(d):
-    return set(d.keys())
-
-def allocated_completely(order, allocation):
-    return skus(order) == skus(allocation)
-
+def allocate(order, stock, shipments):
+    allocations = []
+    for source in [stock] + shipments:
+        allocation = allocate_to(order, source)
+        if allocated_completely(order, allocation):
+            return allocation
+        allocations.append(allocation)
+    return combine_preferring_first(allocations)
 
 def allocate_to(order, source):
     return {
@@ -13,23 +15,12 @@ def allocate_to(order, source):
         and source[sku] > quantity
     }
 
+def allocated_completely(order, allocation):
+    return order.keys() == allocation.keys()
 
-def merge(allocations):
+def combine_preferring_first(allocations):
     return {
         k: v
-        for d in allocations
+        for d in reversed(allocations)
         for k, v in d.items()
     }
-
-
-
-def allocate(order, stock, shipments):
-    allocations = []
-    for source in [stock] + shipments:
-        allocation = allocate_to(order, source)
-        if allocated_completely(order, allocation):
-            return allocation
-        allocations.append(allocation)
-
-    return merge(reversed(allocations))
-

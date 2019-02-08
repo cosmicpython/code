@@ -21,13 +21,15 @@ class Allocation(dict):
             allocation.supplement_with(source_allocation)
         return allocation
 
+
     def supplement_with(self, allocation):
         for sku, quantity in allocation.items():
             if sku in self:
                 continue
             self[sku] = quantity
 
-    def apply(self):
+
+    def decrement_source_quantities(self):
         for sku, source in self.items():
             source[sku] -= self.order[sku]
 
@@ -36,7 +38,7 @@ class Order(dict):
 
     def allocate(self, stock, shipments):
         self.allocation = Allocation.for_order(self, stock, shipments)
-        self.allocation.apply()
+        self.allocation.decrement_source_quantities()
 
 
 class Stock(dict):

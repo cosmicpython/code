@@ -15,7 +15,7 @@ class SkuLines:
 
     @property
     def skus(self):
-        return set(l.sku for l in self.lines)
+        return {l.sku for l in self.lines}
 
     @property
     def quantities(self):

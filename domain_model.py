@@ -22,10 +22,6 @@ class Allocation(dict):
                 continue
             self[sku] = quantity
 
-    @property
-    def is_complete(self):
-        return self.skus == self.order.skus
-
     def apply(self):
         for sku, source in self.items():
             source[sku] -= self.order[sku]
@@ -37,18 +33,10 @@ class Order(dict):
     def skus(self):
         return self.keys()
 
-    @property
-    def fully_allocated(self):
-        return self.allocation.is_complete
-
     def allocate(self, stock, shipments):
         self.allocation = Allocation({}, order=self)
         for source in [stock] + sorted(shipments):
             source_allocation = Allocation.for_(self, source)
-            if source_allocation.is_complete:
-                self.allocation = source_allocation
-                self.allocation.apply()
-                return
             self.allocation.supplement_with(source_allocation)
         self.allocation.apply()
 

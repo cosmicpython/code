@@ -92,17 +92,6 @@ def test_can_allocate_to_both_preferring_stock():
     assert allocations['sku4'] == stock
 
 
-def test_mixed_allocations_are_avoided_if_possible():
-    order = {'sku1': 10, 'sku2': 10}
-    shipment = {'sku1': 1000, 'sku2': 1000}
-    stock = {'sku1': 1000}
-
-    allocations = allocate(order, stock, shipments=[shipment])
-
-    assert allocations['sku1'] == shipment
-    assert allocations['sku2'] == shipment
-
-
 def test_allocated_to_first_suitable_shipment_in_list():
     order = {'sku1': 10, 'sku2': 10}
     shipment1 = {'sku1': 1000, 'sku2': 1000}

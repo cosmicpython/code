@@ -4,10 +4,6 @@ class Allocation(dict):
         self.order = order
         super().__init__(d)
 
-    @property
-    def skus(self):
-        return self.keys()
-
     @staticmethod
     def for_source(order, source):
         return Allocation({
@@ -37,10 +33,6 @@ class Allocation(dict):
 
 
 class Order(dict):
-
-    @property
-    def skus(self):
-        return self.keys()
 
     def allocate(self, stock, shipments):
         self.allocation = Allocation.for_order(self, stock, shipments)

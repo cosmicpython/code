@@ -30,7 +30,7 @@ class Order(SkuLines):
 
     def allocate(self, stock, shipments):
         self.allocation = Allocation.for_order(self, stock, shipments)
-        self.allocation.apply()
+        self.allocation.decrement_source_quantities()
 
 
 @dataclass
@@ -39,7 +39,7 @@ class Stock(SkuLines):
     def can_allocate(self, line: OrderLine):
         return line.sku in self.skus and self.quantities[line.sku] > line.quantity
 
-    def allocate(self, sku, quantity):
+    def decrement_quantity(self, sku, quantity):
         for line in self.lines:
             if line.sku == sku:
                 line.quantity -= quantity
@@ -60,6 +60,9 @@ class AllocationLine:
     sku: str
     quantity: int
     source: Stock
+
+    def decrement_source_quantity(self):
+        self.source.decrement_quantity(self.sku, self.quantity)
 
 
 @dataclass
@@ -97,12 +100,8 @@ class Allocation:
             l for l in other_allocation.lines if l.sku not in self.skus
         )
 
-    @property
-    def is_complete(self):
-        return self.skus == self.order.skus
-
-    def apply(self):
+    def decrement_source_quantities(self):
         for line in self.lines:
-            line.source.allocate(line.sku, line.quantity)
+            line.decrement_source_quantity()
 
 

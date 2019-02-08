@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List
 from datetime import date
 
+
 @dataclass
 class OrderLine:
     sku: str
@@ -27,21 +28,9 @@ class SkuLines:
 @dataclass
 class Order(SkuLines):
 
-    @property
-    def fully_allocated(self):
-        return self.allocation.is_complete
-
     def allocate(self, stock, shipments):
-        self.allocation = Allocation(lines=[], order=self)
-        for source in [stock] + sorted(shipments):
-            source_allocation = Allocation.for_(self, source)
-            if source_allocation.is_complete:
-                self.allocation = source_allocation
-                self.allocation.apply()
-                return
-            self.allocation.supplement_with(source_allocation)
+        self.allocation = Allocation.for_order(self, stock, shipments)
         self.allocation.apply()
-
 
 
 @dataclass
@@ -87,14 +76,23 @@ class Allocation:
         return {l.sku: l.source for l in self.lines}
 
     @staticmethod
-    def for_(order: Order, source: Stock):
-        return Allocation(
-            lines=[
-                AllocationLine(sku=line.sku, quantity=line.quantity, source=source) for line in order.lines
-                if source.can_allocate(line)
-            ],
-            order=order
-        )
+    def for_source(order: Order, source: Stock):
+        return Allocation(lines=[
+            AllocationLine(sku=line.sku, quantity=line.quantity, source=source)
+            for line in order.lines
+            if source.can_allocate(line)
+        ], order=order)
+
+    @staticmethod
+    def for_order(order: Order, stock: Stock, shipments: List[Shipment]):
+        split_allocation = Allocation(lines=[], order=order)
+        for source in [stock] + sorted(shipments):
+            source_allocation = Allocation.for_source(order, source)
+            if source_allocation.is_complete:
+                return source_allocation
+            split_allocation.supplement_with(source_allocation)
+        return split_allocation
+
 
     def supplement_with(self, other_allocation):
         self.lines.extend(
@@ -108,4 +106,5 @@ class Allocation:
     def apply(self):
         for line in self.lines:
             line.source.allocate(line.sku, line.quantity)
+
 

@@ -9,12 +9,21 @@ class Allocation(dict):
         return self.keys()
 
     @staticmethod
-    def for_(order, source):
+    def for_source(order, source):
         return Allocation({
             sku: source
             for sku, quantity in order.items()
             if source.can_allocate(sku, quantity)
         }, order=order)
+
+
+    @staticmethod
+    def for_order(order, stock, shipments):
+        allocation = Allocation({}, order=order)
+        for source in [stock] + sorted(shipments):
+            source_allocation = Allocation.for_source(order, source)
+            allocation.supplement_with(source_allocation)
+        return allocation
 
     def supplement_with(self, allocation):
         for sku, quantity in allocation.items():
@@ -34,10 +43,7 @@ class Order(dict):
         return self.keys()
 
     def allocate(self, stock, shipments):
-        self.allocation = Allocation({}, order=self)
-        for source in [stock] + sorted(shipments):
-            source_allocation = Allocation.for_(self, source)
-            self.allocation.supplement_with(source_allocation)
+        self.allocation = Allocation.for_order(self, stock, shipments)
         self.allocation.apply()
 
 

@@ -1,48 +1,32 @@
-class Allocation(dict):
-
-    def __init__(self, d, order):
-        self.order = order
-        super().__init__(d)
-
-    @property
-    def skus(self):
-        return self.keys()
-
-    @staticmethod
-    def for_(order, source):
-        return Allocation({
-            sku: source
-            for sku, quantity in order.items()
-            if source.can_allocate(sku, quantity)
-        }, order=order)
-
-    def supplement_with(self, allocation):
-        for sku, quantity in allocation.items():
-            if sku in self:
-                continue
-            self[sku] = quantity
-
-    @property
-    def is_complete(self):
-        return self.skus == self.order.skus
-
-    def apply(self):
-        for sku, source in self.items():
-            source[sku] -= self.order[sku]
+from dataclasses import dataclass
+from typing import List
+from datetime import date
 
 
-class Order(dict):
+@dataclass
+class OrderLine:
+    sku: str
+    quantity: int
+
+
+@dataclass
+class Order:
+    lines: List[OrderLine]
 
     @property
     def skus(self):
-        return self.keys()
+        return set(l.sku for l in self.lines)
+
+    @property
+    def quantities(self):
+        return {l.sku: l.quantity for l in self.lines}
 
     @property
     def fully_allocated(self):
         return self.allocation.is_complete
 
     def allocate(self, stock, shipments):
-        self.allocation = Allocation({}, order=self)
+        self.allocation = Allocation(lines=[], order=self)
         for source in [stock] + sorted(shipments):
             source_allocation = Allocation.for_(self, source)
             if source_allocation.is_complete:
@@ -53,21 +37,80 @@ class Order(dict):
         self.allocation.apply()
 
 
-class Stock(dict):
+class StockLine(OrderLine):
+    pass
 
-    def can_allocate(self, sku, quantity):
-        return sku in self and self[sku] > quantity
+
+@dataclass
+class Stock:
+    lines: List[StockLine]
+
+    @property
+    def skus(self):
+        return set(l.sku for l in self.lines)
+
+    @property
+    def quantities(self):
+        return {l.sku: l.quantity for l in self.lines}
+
+    def can_allocate(self, line: OrderLine):
+        return line.sku in self.skus and self.quantities[line.sku] > line.quantity
 
     def allocate(self, sku, quantity):
-        self[sku] -= quantity
+        for line in self.lines:
+            if line.sku == sku:
+                line.quantity -= quantity
 
 
+@dataclass
 class Shipment(Stock):
+    eta: date = None
 
     def __lt__(self, other):
         return self.eta < other.eta
 
-    def __init__(self, lines, eta):
-        self.eta = eta
-        super().__init__(lines)
+
+@dataclass
+class AllocationLine:
+    sku: str
+    source: Stock
+
+
+@dataclass
+class Allocation:
+    lines: List[AllocationLine]
+    order: Order
+
+    @property
+    def skus(self):
+        return set(l.sku for l in self.lines)
+
+    @property
+    def sources(self):
+        return {l.sku: l.source for l in self.lines}
+
+    @staticmethod
+    def for_(order, source):
+        return Allocation(
+            lines=[
+                AllocationLine(sku=line.sku, source=source) for line in order.lines
+                if source.can_allocate(line)
+            ],
+            order=order
+        )
+
+    def supplement_with(self, allocation):
+        for line in allocation.lines:
+            if line.sku in self.skus:
+                continue
+            self.lines.append(line)
+
+    @property
+    def is_complete(self):
+        return self.skus == self.order.skus
+
+    def apply(self):
+        for line in self.lines:
+            line.source.allocate(line.sku, self.order.quantities[line.sku])
+
 

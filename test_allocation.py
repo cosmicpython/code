@@ -120,17 +120,6 @@ def test_can_allocate_to_both_preferring_stock():
     assert stock.quantities['sku4'] == 996
 
 
-def test_mixed_allocation_are_avoided_if_possible():
-    order = Order({'sku1': 10, 'sku2': 10})
-    shipment = Shipment({'sku1': 1000, 'sku2': 1000}, eta=tomorrow)
-    stock = Stock({'sku1': 1000})
-
-    order.allocate(stock, shipments=[shipment])
-
-    assert order.allocation.sources['sku1'] == shipment
-    assert order.allocation.sources['sku2'] == shipment
-
-
 def test_allocated_to_earliest_suitable_shipment_in_list():
     order = Order({'sku1': 10, 'sku2': 10})
     shipment1 = Shipment({'sku1': 1000, 'sku2': 1000}, eta=today)

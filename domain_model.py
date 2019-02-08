@@ -85,13 +85,11 @@ class Allocation:
 
     @staticmethod
     def for_order(order: Order, stock: Stock, shipments: List[Shipment]):
-        split_allocation = Allocation(lines=[], order=order)
+        allocation = Allocation(lines=[], order=order)
         for source in [stock] + sorted(shipments):
             source_allocation = Allocation.for_source(order, source)
-            if source_allocation.is_complete:
-                return source_allocation
-            split_allocation.supplement_with(source_allocation)
-        return split_allocation
+            allocation.supplement_with(source_allocation)
+        return allocation
 
 
     def supplement_with(self, other_allocation):

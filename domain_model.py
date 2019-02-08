@@ -95,11 +95,10 @@ class Allocation:
             order=order
         )
 
-    def supplement_with(self, allocation):
-        for line in allocation.lines:
-            if line.sku in self.skus:
-                continue
-            self.lines.append(line)
+    def supplement_with(self, other_allocation):
+        self.lines.extend(
+            l for l in other_allocation.lines if l.sku not in self.skus
+        )
 
     @property
     def is_complete(self):

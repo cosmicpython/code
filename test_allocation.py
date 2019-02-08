@@ -6,9 +6,9 @@ tomorrow = today + timedelta(days=1)
 later = tomorrow + timedelta(days=10)
 
 Order = lambda d: domain_model.Order(lines=[domain_model.OrderLine(sku, qty) for sku, qty in d.items()])
-Stock = lambda d: domain_model.Stock(lines=[domain_model.StockLine(sku, qty) for sku, qty in d.items()])
+Stock = lambda d: domain_model.Stock(lines=[domain_model.OrderLine(sku, qty) for sku, qty in d.items()])
 Shipment = lambda d, eta: domain_model.Shipment(
-    lines=[domain_model.StockLine(sku, qty) for sku, qty in d.items()],
+    lines=[domain_model.OrderLine(sku, qty) for sku, qty in d.items()],
     eta=eta,
 )
 

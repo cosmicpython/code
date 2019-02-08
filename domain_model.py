@@ -2,15 +2,15 @@ from dataclasses import dataclass
 from typing import List
 from datetime import date
 
-
 @dataclass
 class OrderLine:
     sku: str
     quantity: int
 
 
+
 @dataclass
-class Order:
+class SkuLines:
     lines: List[OrderLine]
 
     @property
@@ -20,6 +20,12 @@ class Order:
     @property
     def quantities(self):
         return {l.sku: l.quantity for l in self.lines}
+
+
+
+
+@dataclass
+class Order(SkuLines):
 
     @property
     def fully_allocated(self):
@@ -37,21 +43,9 @@ class Order:
         self.allocation.apply()
 
 
-class StockLine(OrderLine):
-    pass
-
 
 @dataclass
-class Stock:
-    lines: List[StockLine]
-
-    @property
-    def skus(self):
-        return set(l.sku for l in self.lines)
-
-    @property
-    def quantities(self):
-        return {l.sku: l.quantity for l in self.lines}
+class Stock(SkuLines):
 
     def can_allocate(self, line: OrderLine):
         return line.sku in self.skus and self.quantities[line.sku] > line.quantity
@@ -60,6 +54,8 @@ class Stock:
         for line in self.lines:
             if line.sku == sku:
                 line.quantity -= quantity
+                return
+        raise Exception(f'sku {sku} not found in stock skus ({self.skus})')
 
 
 @dataclass
@@ -90,7 +86,7 @@ class Allocation:
         return {l.sku: l.source for l in self.lines}
 
     @staticmethod
-    def for_(order, source):
+    def for_(order: Order, source: Stock):
         return Allocation(
             lines=[
                 AllocationLine(sku=line.sku, source=source) for line in order.lines
@@ -112,5 +108,4 @@ class Allocation:
     def apply(self):
         for line in self.lines:
             line.source.allocate(line.sku, self.order.quantities[line.sku])
-
 

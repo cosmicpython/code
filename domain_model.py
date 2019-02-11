@@ -17,7 +17,7 @@ class Order(dict):
 
 
 
-class Warehouse(dict):
+class _Stock(dict):
 
     def allocation_for(self, order):
         return {
@@ -28,7 +28,12 @@ class Warehouse(dict):
         }
 
 
-class Shipment(Warehouse):
+class Warehouse(_Stock):
+    pass
+
+
+
+class Shipment(_Stock):
 
     def __init__(self, d, eta):
         self.eta = eta

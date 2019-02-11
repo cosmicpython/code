@@ -28,13 +28,13 @@ class SkuLines:
 @dataclass
 class Order(SkuLines):
 
-    def allocate(self, stock, shipments):
-        self.allocation = Allocation.for_order(self, stock, shipments)
+    def allocate(self, warehouse, shipments):
+        self.allocation = Allocation.for_order(self, warehouse, shipments)
         self.allocation.decrement_source_quantities()
 
 
 @dataclass
-class Stock(SkuLines):
+class Warehouse(SkuLines):
 
     def can_allocate(self, line: OrderLine):
         return line.sku in self.skus and self.quantities[line.sku] > line.quantity
@@ -44,11 +44,11 @@ class Stock(SkuLines):
             if line.sku == sku:
                 line.quantity -= quantity
                 return
-        raise Exception(f'sku {sku} not found in stock skus ({self.skus})')
+        raise Exception(f'sku {sku} not found in warehouse skus ({self.skus})')
 
 
 @dataclass
-class Shipment(Stock):
+class Shipment(Warehouse):
     eta: date = None
 
     def __lt__(self, other):
@@ -59,7 +59,7 @@ class Shipment(Stock):
 class AllocationLine:
     sku: str
     quantity: int
-    source: Stock
+    source: Warehouse
 
     def decrement_source_quantity(self):
         self.source.decrement_quantity(self.sku, self.quantity)
@@ -79,7 +79,7 @@ class Allocation:
         return {l.sku: l.source for l in self.lines}
 
     @staticmethod
-    def for_source(order: Order, source: Stock):
+    def for_source(order: Order, source: Warehouse):
         return Allocation(lines=[
             AllocationLine(sku=line.sku, quantity=line.quantity, source=source)
             for line in order.lines
@@ -87,9 +87,9 @@ class Allocation:
         ], order=order)
 
     @staticmethod
-    def for_order(order: Order, stock: Stock, shipments: List[Shipment]):
+    def for_order(order: Order, warehouse: Warehouse, shipments: List[Shipment]):
         allocation = Allocation(lines=[], order=order)
-        for source in [stock] + sorted(shipments):
+        for source in [warehouse] + sorted(shipments):
             source_allocation = Allocation.for_source(order, source)
             allocation.supplement_with(source_allocation)
         return allocation

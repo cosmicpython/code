@@ -25,6 +25,10 @@ class Allocation:
     def __contains__(self, sku):
         return sku in self._sources
 
+    def with_sources(self, sources: dict):
+        self._sources = sources
+        return self
+
     def supplement_with(self, other):
         for sku, source in other._sources.items():
             if sku not in self:
@@ -70,14 +74,12 @@ class _Stock(_Lines):
         self._lines[sku] -= qty
 
     def allocation_for(self, order: Order):
-        allocation = Allocation(order)
-        allocation._sources = {  # TODO: this ain't right
+        return Allocation(order).with_sources({
             line.sku: self
             for line in order.lines
             if line.sku in self
             and self[line.sku] > line.qty
-        }
-        return allocation
+        })
 
 
 class Warehouse(_Stock):

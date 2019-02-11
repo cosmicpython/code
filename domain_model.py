@@ -1,37 +1,80 @@
+from dataclasses import dataclass
+
 def allocate(order, warehouse, shipments):
     ordered_sources = [warehouse] + sorted(shipments)
-    allocation = {}
-    for source in reversed(ordered_sources):
-        allocation.update(source.allocation_for(order))
-    decrement_source_quantities(order, allocation)
+    allocation = Allocation(order, {})
+    for source in ordered_sources:
+        allocation.supplement_with(source.allocation_for(order))
+    allocation.decrement_source_quantities()
     return allocation
 
-def decrement_source_quantities(order, allocation):
-    for sku, source in allocation.items():
-        source[sku] -= order[sku]
 
 
-class Order(dict):
-    pass
+
+class Allocation:
+
+    def __init__(self, order, sources):
+        self.order = order
+        self.sources = sources
+
+    def __getitem__(self, sku):
+        return self.sources[sku]
+
+    def __contains__(self, sku):
+        return sku in self.sources
+
+    def supplement_with(self, other):
+        for sku, qty in other.sources.items():
+            if sku not in self:
+                self.sources[sku] = qty
+
+    def decrement_source_quantities(self):
+        for sku, source in self.sources.items():
+            source[sku] -= self.order[sku]
+
+
+@dataclass
+class OrderLine:
+    sku: str
+    qty: int
+
+
+class Order:
+    def __init__(self, quantities):
+        self.quantities = quantities
+
+    def __getitem__(self, sku):
+        return self.quantities[sku]
+
+    @property
+    def lines(self):
+        return [
+            OrderLine(sku, qty)
+            for sku, qty in self.quantities.items()
+        ]
 
 
 class _Stock(dict):
 
     def allocation_for(self, order):
-        return {
-            sku: self
-            for sku, quantity in order.items()
-            if sku in self
-            and self[sku] > quantity
-        }
+        return Allocation(order, {
+            line.sku: self
+            for line in order.lines
+            if line.sku in self
+            and self[line.sku] > line.qty
+        })
 
 
 class Warehouse(_Stock):
-    pass
+
+    def __repr__(self):
+        return f'<Warehouse {super().__repr__()}>'
 
 
 
 class Shipment(_Stock):
+    def __repr__(self):
+        return f'<Shipment {super().__repr__()}>'
 
     def __init__(self, d, eta):
         self.eta = eta
@@ -39,5 +82,4 @@ class Shipment(_Stock):
 
     def __lt__(self, other):
         return self.eta < other.eta
-
 

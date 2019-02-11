@@ -1,153 +1,172 @@
-from domain_model import allocate
+from domain_model import Order, Stock, Shipment
+from datetime import date, timedelta
+
+today = date.today()
+tomorrow = today + timedelta(days=1)
+later = tomorrow + timedelta(days=10)
 
 
 def test_can_allocate_to_stock():
-    order = {'a-sku': 10}
-    stock = {'a-sku': 1000}
+    order = Order({'a-sku': 10})
+    stock = Stock({'a-sku': 1000})
 
-    allocations = allocate(order, stock, shipments=[])
+    order.allocate(stock, shipments=[])
 
-    assert allocations['a-sku'] == stock
+    assert order.allocation['a-sku'] == stock
+    assert stock['a-sku'] == 990
 
 
 def test_can_allocate_to_shipment():
-    order = {'a-sku': 10}
-    shipment = {'a-sku': 1000}
+    order = Order({'a-sku': 10})
+    shipment = Shipment({'a-sku': 1000}, eta=tomorrow)
 
-    allocations = allocate(order, stock={}, shipments=[shipment])
+    order.allocate(stock=Stock({}), shipments=[shipment])
 
-    assert allocations['a-sku'] == shipment
+    assert order.allocation['a-sku'] == shipment
+    assert shipment['a-sku'] == 990
 
 
 def test_ignores_irrelevant_stock():
-    order = {'sku1': 10}
-    stock = {'sku2': 1000}
-    shipment = {'sku1': 1000}
+    order = Order({'sku1': 10})
+    stock = Stock({'sku2': 1000})
+    shipment = Shipment({'sku1': 1000}, eta=tomorrow)
 
-    allocations = allocate(order, stock=stock, shipments=[shipment])
+    order.allocate(stock=stock, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment
+    assert order.allocation['sku1'] == shipment
+
 
 
 def test_can_allocate_to_correct_shipment():
-    order = {'sku2': 10}
-    shipment1 = {'sku1': 1000}
-    shipment2 = {'sku2': 1000}
+    order = Order({'sku2': 10})
+    shipment1 = Shipment({'sku1': 1000}, eta=tomorrow)
+    shipment2 = Shipment({'sku2': 1000}, eta=tomorrow)
 
-    allocations = allocate(order, stock={}, shipments=[shipment1, shipment2])
+    order.allocate(stock=Stock({}), shipments=[shipment1, shipment2])
 
-    assert allocations['sku2'] == shipment2
+    assert order.allocation['sku2'] == shipment2
 
 
 def test_allocates_to_stock_in_preference_to_shipment():
-    order = {'sku1': 10}
-    stock = {'sku1': 1000}
-    shipment = {'sku1': 1000}
+    order = Order({'sku1': 10})
+    stock = Stock({'sku1': 1000})
+    shipment = Shipment({'sku1': 1000}, eta=tomorrow)
 
-    allocations = allocate(order, stock, shipments=[shipment])
+    order.allocate(stock, shipments=[shipment])
 
-    assert allocations['sku1'] == stock
+    assert order.allocation['sku1'] == stock
+    assert stock['sku1'] == 990
+    assert shipment['sku1'] == 1000
 
 
 def test_can_allocate_multiple_lines_to_wh():
-    order = {'sku1': 5, 'sku2': 10}
-    stock = {'sku1': 1000, 'sku2': 1000}
+    order = Order({'sku1': 5, 'sku2': 10})
+    stock = Stock({'sku1': 1000, 'sku2': 1000})
 
-    allocations = allocate(order, stock, shipments=[])
-    assert allocations['sku1'] == stock
-    assert allocations['sku2'] == stock
+    order.allocate(stock, shipments=[])
+    assert order.allocation['sku1'] == stock
+    assert order.allocation['sku2'] == stock
+    assert stock['sku1'] == 995
+    assert stock['sku2'] == 990
 
 
 def test_can_allocate_multiple_lines_to_shipment():
-    order = {'sku1': 5, 'sku2': 10}
-    shipment = {'sku1': 1000, 'sku2': 1000}
+    order = Order({'sku1': 5, 'sku2': 10})
+    shipment = Shipment({'sku1': 1000, 'sku2': 1000}, eta=tomorrow)
 
-    allocations = allocate(order, stock={}, shipments=[shipment])
+    order.allocate(stock=Stock({}), shipments=[shipment])
 
-    assert allocations['sku1'] == shipment
-    assert allocations['sku2'] == shipment
+    assert order.allocation['sku1'] == shipment
+    assert order.allocation['sku2'] == shipment
+    assert shipment['sku1'] == 995
+    assert shipment['sku2'] == 990
 
 
 def test_can_allocate_to_both():
-    order = {'sku1': 5, 'sku2': 10}
-    shipment = {'sku2': 1000}
-    stock = {'sku1': 1000}
+    order = Order({'sku1': 5, 'sku2': 10})
+    shipment = Shipment({'sku2': 1000}, eta=tomorrow)
+    stock = Stock({'sku1': 1000})
 
-    allocations = allocate(order, stock, shipments=[shipment])
+    order.allocate(stock, shipments=[shipment])
 
-    assert allocations['sku1'] == stock
-    assert allocations['sku2'] == shipment
+    assert order.allocation['sku1'] == stock
+    assert order.allocation['sku2'] == shipment
+    assert stock['sku1'] == 995
+    assert shipment['sku2'] == 990
 
 
 def test_can_allocate_to_both_preferring_stock():
-    order = {'sku1': 1, 'sku2': 2, 'sku3': 3, 'sku4': 4}
-    shipment = {'sku1': 1000, 'sku2': 1000, 'sku3': 1000}
-    stock = {'sku3': 1000, 'sku4': 1000}
+    order = Order({'sku1': 1, 'sku2': 2, 'sku3': 3, 'sku4': 4})
+    shipment = Shipment({'sku1': 1000, 'sku2': 1000, 'sku3': 1000}, eta=tomorrow)
+    stock = Stock({'sku3': 1000, 'sku4': 1000})
 
-    allocations = allocate(order, stock, shipments=[shipment])
+    order.allocate(stock, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment
-    assert allocations['sku2'] == shipment
-    assert allocations['sku3'] == stock
-    assert allocations['sku4'] == stock
-
-
-def test_allocated_to_first_suitable_shipment_in_list():
-    order = {'sku1': 10, 'sku2': 10}
-    shipment1 = {'sku1': 1000, 'sku2': 1000}
-    shipment2 = {'sku1': 1000, 'sku2': 1000}
-    stock = {}
-
-    allocations = allocate(order, stock, shipments=[shipment1, shipment2])
-
-    assert allocations['sku1'] == shipment1
-    assert allocations['sku2'] == shipment1
+    assert order.allocation['sku1'] == shipment
+    assert order.allocation['sku2'] == shipment
+    assert order.allocation['sku3'] == stock
+    assert order.allocation['sku4'] == stock
+    assert shipment['sku1'] == 999
+    assert shipment['sku2'] == 998
+    assert shipment['sku3'] == 1000
+    assert stock['sku3'] == 997
+    assert stock['sku4'] == 996
 
 
-def test_still_preserves_ordering_if_split_across_shipments():
-    order = {'sku1': 10, 'sku2': 10, 'sku3': 10}
-    shipment1 = {'sku1': 1000}
-    shipment2 = {'sku2': 1000, 'sku3': 1000}
-    shipment3 = {'sku2': 1000, 'sku3': 1000}
-    stock = {}
+def test_allocated_to_earliest_suitable_shipment_in_list():
+    order = Order({'sku1': 10, 'sku2': 10})
+    shipment1 = Shipment({'sku1': 1000, 'sku2': 1000}, eta=today)
+    shipment2 = Shipment({'sku1': 1000, 'sku2': 1000}, eta=tomorrow)
+    stock = Stock({})
 
-    allocations = allocate(order, stock, shipments=[shipment1, shipment2, shipment3])
+    order.allocate(stock, shipments=[shipment1, shipment2])
 
-    assert allocations['sku1'] == shipment1
-    assert allocations['sku2'] == shipment2
-    assert allocations['sku3'] == shipment2
+    assert order.allocation['sku1'] == shipment1
+    assert order.allocation['sku2'] == shipment1
+
+
+def test_still_chooses_earliest_if_split_across_shipments():
+    order = Order({'sku1': 10, 'sku2': 10, 'sku3': 10})
+    shipment1 = Shipment({'sku1': 1000}, eta=today)
+    shipment2 = Shipment({'sku2': 1000, 'sku3': 1000}, eta=tomorrow)
+    shipment3 = Shipment({'sku2': 1000, 'sku3': 1000}, eta=later)
+    stock = Stock({})
+
+    order.allocate(stock, shipments=[shipment2, shipment3, shipment1])
+
+    assert order.allocation['sku1'] == shipment1
+    assert order.allocation['sku2'] == shipment2
+    assert order.allocation['sku3'] == shipment2
 
 
 def test_stock_not_quite_enough_means_we_use_shipment():
-    order = {'sku1': 10, 'sku2': 10}
-    stock = {'sku1': 10, 'sku2': 5}
-    shipment = {
+    order = Order({'sku1': 10, 'sku2': 10})
+    stock = Stock({'sku1': 10, 'sku2': 5})
+    shipment = Shipment({
         'sku1': 1000,
         'sku2': 1000,
-    }
+    }, eta=tomorrow)
 
-    allocations = allocate(order, stock, shipments=[shipment])
+    order.allocate(stock, shipments=[shipment])
 
-    assert allocations['sku1'] == shipment
-    assert allocations['sku2'] == shipment
+    assert order.allocation['sku1'] == shipment
+    assert order.allocation['sku2'] == shipment
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_stock():
-    order = {'a-sku': 10}
-    stock = {'a-sku': 5}
+    order = Order({'a-sku': 10})
+    stock = Stock({'a-sku': 5})
 
-    allocations = allocate(order, stock, shipments=[])
+    order.allocate(stock, shipments=[])
 
-    assert 'a-sku' not in allocations
+    assert 'a-sku' not in order.allocation
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_shipment():
-    order = {'a-sku': 10}
-    shipment = {
-        'a-sku': 5,
-    }
+    order = Order({'a-sku': 10})
+    shipment = Shipment({'a-sku': 5}, eta=tomorrow)
 
-    allocations = allocate(order, stock={}, shipments=[shipment])
+    order.allocate(stock=Stock({}), shipments=[shipment])
 
-    assert 'a-sku' not in allocations
+    assert 'a-sku' not in order.allocation
 

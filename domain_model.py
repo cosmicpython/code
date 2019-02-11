@@ -41,7 +41,7 @@ class Line:
     qty: int
 
 
-class _SkuLines:
+class _Lines:
 
     def __init__(self, lines: dict):
         self._lines = lines
@@ -60,11 +60,11 @@ class _SkuLines:
         ]
 
 
-class Order(_SkuLines):
+class Order(_Lines):
     pass
 
 
-class _Stock(_SkuLines):
+class _Stock(_Lines):
 
     def decrement_available(self, sku, qty):
         self._lines[sku] -= qty

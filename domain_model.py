@@ -5,7 +5,7 @@ def allocate(order, warehouse, shipments):
     allocation = Allocation(order, {})
     for source in ordered_sources:
         allocation.supplement_with(source.allocation_for(order))
-    allocation.decrement_source_quantities()
+    allocation.decrement_available_quantities()
     return allocation
 
 
@@ -28,33 +28,44 @@ class Allocation:
             if sku not in self:
                 self.sources[sku] = qty
 
-    def decrement_source_quantities(self):
+    def decrement_available_quantities(self):
         for sku, source in self.sources.items():
-            source[sku] -= self.order[sku]
+            source.decrement_available(sku, self.order[sku])
 
 
 @dataclass
-class OrderLine:
+class Line:
     sku: str
     qty: int
 
 
-class Order:
-    def __init__(self, quantities):
-        self.quantities = quantities
+class _SkuLines:
+
+    def __init__(self, linesdict):
+        self.linesdict = linesdict
 
     def __getitem__(self, sku):
-        return self.quantities[sku]
+        return self.linesdict[sku]
+
+    def __contains__(self, sku):
+        return sku in self.linesdict
 
     @property
     def lines(self):
         return [
-            OrderLine(sku, qty)
-            for sku, qty in self.quantities.items()
+            Line(sku, qty)
+            for sku, qty in self.linesdict.items()
         ]
 
 
-class _Stock(dict):
+class Order(_SkuLines):
+    pass
+
+
+class _Stock(_SkuLines):
+
+    def decrement_available(self, sku, qty):
+        self.linesdict[sku] -= qty
 
     def allocation_for(self, order):
         return Allocation(order, {
@@ -82,4 +93,3 @@ class Shipment(_Stock):
 
     def __lt__(self, other):
         return self.eta < other.eta
-

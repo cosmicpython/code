@@ -26,9 +26,9 @@ class Allocation:
         return sku in self._sources
 
     def supplement_with(self, other):
-        for sku, qty in other._sources.items():
+        for sku, source in other._sources.items():
             if sku not in self:
-                self._sources[sku] = qty
+                self._sources[sku] = source
 
     def decrement_available_quantities(self):
         for sku, source in self._sources.items():

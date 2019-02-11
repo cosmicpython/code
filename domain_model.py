@@ -1,6 +1,6 @@
-def allocate(order, stock, shipments):
+def allocate(order, warehouse, shipments):
     allocation = {}
-    for source in shipments + [stock]:
+    for source in shipments + [warehouse]:
         allocation.update(allocation_from(order, source))
     return allocation
 

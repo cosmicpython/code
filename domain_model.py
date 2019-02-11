@@ -90,12 +90,13 @@ class Warehouse(_Stock):
 
 
 class Shipment(_Stock):
-    def __repr__(self):
-        return f'<Shipment {super().__repr__()}>'
 
     def __init__(self, lines: dict, eta: date):
         self.eta = eta
         super().__init__(lines)
+
+    def __repr__(self):
+        return f'<Shipment {super().__repr__()}>'
 
     def __lt__(self, other):
         return self.eta < other.eta

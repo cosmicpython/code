@@ -1,20 +1,18 @@
+def allocate(order, warehouse, shipments):
+    ordered_sources = [warehouse] + sorted(shipments)
+    allocation = {}
+    for source in reversed(ordered_sources):
+        allocation.update(source.allocation_for(order))
+    decrement_source_quantities(order, allocation)
+    return allocation
+
+def decrement_source_quantities(order, allocation):
+    for sku, source in allocation.items():
+        source[sku] -= order[sku]
+
+
 class Order(dict):
-
-    def allocate(self, warehouse, shipments):
-        self.allocation = self.find_allocation(warehouse, shipments)
-        self.decrement_source_quantities()
-
-    def find_allocation(self, warehouse, shipments):
-        ordered_sources = [warehouse] + sorted(shipments)
-        allocation = {}
-        for source in reversed(ordered_sources):
-            allocation.update(source.allocation_for(self))
-        return allocation
-
-    def decrement_source_quantities(self):
-        for sku, source in self.allocation.items():
-            source[sku] -= self[sku]
-
+    pass
 
 
 class _Stock(dict):

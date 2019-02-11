@@ -1,4 +1,4 @@
-from domain_model import Order, Warehouse, Shipment
+from domain_model import allocate, Order, Warehouse, Shipment
 from datetime import date, timedelta
 
 today = date.today()
@@ -10,9 +10,9 @@ def test_can_allocate_to_warehouse():
     order = Order({'a-sku': 10})
     warehouse = Warehouse({'a-sku': 1000})
 
-    order.allocate(warehouse, shipments=[])
+    allocation = allocate(order, warehouse, shipments=[])
 
-    assert order.allocation['a-sku'] == warehouse
+    assert allocation['a-sku'] == warehouse
     assert warehouse['a-sku'] == 990
 
 
@@ -20,9 +20,9 @@ def test_can_allocate_to_shipment():
     order = Order({'a-sku': 10})
     shipment = Shipment({'a-sku': 1000}, eta=tomorrow)
 
-    order.allocate(warehouse=Warehouse({}), shipments=[shipment])
+    allocation = allocate(order, warehouse=Warehouse({}), shipments=[shipment])
 
-    assert order.allocation['a-sku'] == shipment
+    assert allocation['a-sku'] == shipment
     assert shipment['a-sku'] == 990
 
 
@@ -31,9 +31,9 @@ def test_ignores_irrelevant_warehouse():
     warehouse = Warehouse({'sku2': 1000})
     shipment = Shipment({'sku1': 1000}, eta=tomorrow)
 
-    order.allocate(warehouse=warehouse, shipments=[shipment])
+    allocation = allocate(order, warehouse=warehouse, shipments=[shipment])
 
-    assert order.allocation['sku1'] == shipment
+    assert allocation['sku1'] == shipment
 
 
 
@@ -42,9 +42,9 @@ def test_can_allocate_to_correct_shipment():
     shipment1 = Shipment({'sku1': 1000}, eta=tomorrow)
     shipment2 = Shipment({'sku2': 1000}, eta=tomorrow)
 
-    order.allocate(warehouse=Warehouse({}), shipments=[shipment1, shipment2])
+    allocation = allocate(order, warehouse=Warehouse({}), shipments=[shipment1, shipment2])
 
-    assert order.allocation['sku2'] == shipment2
+    assert allocation['sku2'] == shipment2
 
 
 def test_allocates_to_warehouse_in_preference_to_shipment():
@@ -52,9 +52,9 @@ def test_allocates_to_warehouse_in_preference_to_shipment():
     warehouse = Warehouse({'sku1': 1000})
     shipment = Shipment({'sku1': 1000}, eta=tomorrow)
 
-    order.allocate(warehouse, shipments=[shipment])
+    allocation = allocate(order, warehouse, shipments=[shipment])
 
-    assert order.allocation['sku1'] == warehouse
+    assert allocation['sku1'] == warehouse
     assert warehouse['sku1'] == 990
     assert shipment['sku1'] == 1000
 
@@ -63,9 +63,9 @@ def test_can_allocate_multiple_lines_to_wh():
     order = Order({'sku1': 5, 'sku2': 10})
     warehouse = Warehouse({'sku1': 1000, 'sku2': 1000})
 
-    order.allocate(warehouse, shipments=[])
-    assert order.allocation['sku1'] == warehouse
-    assert order.allocation['sku2'] == warehouse
+    allocation = allocate(order, warehouse, shipments=[])
+    assert allocation['sku1'] == warehouse
+    assert allocation['sku2'] == warehouse
     assert warehouse['sku1'] == 995
     assert warehouse['sku2'] == 990
 
@@ -74,10 +74,10 @@ def test_can_allocate_multiple_lines_to_shipment():
     order = Order({'sku1': 5, 'sku2': 10})
     shipment = Shipment({'sku1': 1000, 'sku2': 1000}, eta=tomorrow)
 
-    order.allocate(warehouse=Warehouse({}), shipments=[shipment])
+    allocation = allocate(order, warehouse=Warehouse({}), shipments=[shipment])
 
-    assert order.allocation['sku1'] == shipment
-    assert order.allocation['sku2'] == shipment
+    assert allocation['sku1'] == shipment
+    assert allocation['sku2'] == shipment
     assert shipment['sku1'] == 995
     assert shipment['sku2'] == 990
 
@@ -87,10 +87,10 @@ def test_can_allocate_to_both():
     shipment = Shipment({'sku2': 1000}, eta=tomorrow)
     warehouse = Warehouse({'sku1': 1000})
 
-    order.allocate(warehouse, shipments=[shipment])
+    allocation = allocate(order, warehouse, shipments=[shipment])
 
-    assert order.allocation['sku1'] == warehouse
-    assert order.allocation['sku2'] == shipment
+    assert allocation['sku1'] == warehouse
+    assert allocation['sku2'] == shipment
     assert warehouse['sku1'] == 995
     assert shipment['sku2'] == 990
 
@@ -100,12 +100,12 @@ def test_can_allocate_to_both_preferring_warehouse():
     shipment = Shipment({'sku1': 1000, 'sku2': 1000, 'sku3': 1000}, eta=tomorrow)
     warehouse = Warehouse({'sku3': 1000, 'sku4': 1000})
 
-    order.allocate(warehouse, shipments=[shipment])
+    allocation = allocate(order, warehouse, shipments=[shipment])
 
-    assert order.allocation['sku1'] == shipment
-    assert order.allocation['sku2'] == shipment
-    assert order.allocation['sku3'] == warehouse
-    assert order.allocation['sku4'] == warehouse
+    assert allocation['sku1'] == shipment
+    assert allocation['sku2'] == shipment
+    assert allocation['sku3'] == warehouse
+    assert allocation['sku4'] == warehouse
     assert shipment['sku1'] == 999
     assert shipment['sku2'] == 998
     assert shipment['sku3'] == 1000
@@ -119,10 +119,10 @@ def test_allocated_to_earliest_suitable_shipment_in_list():
     shipment2 = Shipment({'sku1': 1000, 'sku2': 1000}, eta=tomorrow)
     warehouse = Warehouse({})
 
-    order.allocate(warehouse, shipments=[shipment1, shipment2])
+    allocation = allocate(order, warehouse, shipments=[shipment1, shipment2])
 
-    assert order.allocation['sku1'] == shipment1
-    assert order.allocation['sku2'] == shipment1
+    assert allocation['sku1'] == shipment1
+    assert allocation['sku2'] == shipment1
 
 
 def test_still_chooses_earliest_if_split_across_shipments():
@@ -132,11 +132,11 @@ def test_still_chooses_earliest_if_split_across_shipments():
     shipment3 = Shipment({'sku2': 1000, 'sku3': 1000}, eta=later)
     warehouse = Warehouse({})
 
-    order.allocate(warehouse, shipments=[shipment2, shipment3, shipment1])
+    allocation = allocate(order, warehouse, shipments=[shipment2, shipment3, shipment1])
 
-    assert order.allocation['sku1'] == shipment1
-    assert order.allocation['sku2'] == shipment2
-    assert order.allocation['sku3'] == shipment2
+    assert allocation['sku1'] == shipment1
+    assert allocation['sku2'] == shipment2
+    assert allocation['sku3'] == shipment2
 
 
 def test_warehouse_not_quite_enough_means_we_use_shipment():
@@ -147,26 +147,26 @@ def test_warehouse_not_quite_enough_means_we_use_shipment():
         'sku2': 1000,
     }, eta=tomorrow)
 
-    order.allocate(warehouse, shipments=[shipment])
+    allocation = allocate(order, warehouse, shipments=[shipment])
 
-    assert order.allocation['sku1'] == shipment
-    assert order.allocation['sku2'] == shipment
+    assert allocation['sku1'] == shipment
+    assert allocation['sku2'] == shipment
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_warehouse():
     order = Order({'a-sku': 10})
     warehouse = Warehouse({'a-sku': 5})
 
-    order.allocate(warehouse, shipments=[])
+    allocation = allocate(order, warehouse, shipments=[])
 
-    assert 'a-sku' not in order.allocation
+    assert 'a-sku' not in allocation
 
 
 def test_cannot_allocate_if_insufficent_quantity_in_shipment():
     order = Order({'a-sku': 10})
     shipment = Shipment({'a-sku': 5}, eta=tomorrow)
 
-    order.allocate(warehouse=Warehouse({}), shipments=[shipment])
+    allocation = allocate(order, warehouse=Warehouse({}), shipments=[shipment])
 
-    assert 'a-sku' not in order.allocation
+    assert 'a-sku' not in allocation
 

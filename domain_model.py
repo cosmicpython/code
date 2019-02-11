@@ -85,7 +85,7 @@ class _Stock(_Lines):
 class Warehouse(_Stock):
 
     def __repr__(self):
-        return f'<Warehouse {super().__repr__()}>'
+        return f'<Warehouse lines={self._lines}>'
 
 
 
@@ -96,7 +96,7 @@ class Shipment(_Stock):
         super().__init__(lines)
 
     def __repr__(self):
-        return f'<Shipment {super().__repr__()}>'
+        return f'<Shipment eta={self.eta} lines={self._lines}>'
 
     def __lt__(self, other):
         return self.eta < other.eta

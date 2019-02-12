@@ -39,7 +39,7 @@ class Allocation:
             source.decrement_available(sku, self.order[sku])
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Line:
     sku: str
     qty: int
@@ -48,20 +48,21 @@ class Line:
 class _Lines:
 
     def __init__(self, lines: dict):
-        self._lines = lines
+        self.lines = [Line(sku, qty) for sku, qty in lines.items()]
 
     def __getitem__(self, sku):
-        return self._lines[sku]
+        return next(l.qty for l in self.lines if l.sku == sku)
+
+    def __setitem__(self, sku, qty):
+        try:
+            line = next(l for l in self.lines if l.sku == sku)
+            line.qty = qty
+        except StopIteration:
+            self.lines.append(Line(sku=sku, qty=qty))
 
     def __contains__(self, sku):
-        return sku in self._lines
+        return sku in {l.sku for l in self.lines}
 
-    @property
-    def lines(self):
-        return [
-            Line(sku, qty)
-            for sku, qty in self._lines.items()
-        ]
 
 
 class Order(_Lines):
@@ -71,7 +72,7 @@ class Order(_Lines):
 class _Stock(_Lines):
 
     def decrement_available(self, sku, qty):
-        self._lines[sku] -= qty
+        self[sku] -= qty
 
     def allocation_for(self, order: Order):
         return Allocation(order).with_sources({

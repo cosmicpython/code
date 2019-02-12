@@ -20,12 +20,21 @@ order_lines = Table(
     Column('qty', Integer),
 )
 
-mapper(Order, order)
+
+class _DummyOrderLine:
+    pass
+
+
+mapper(_DummyOrderLine, order_lines)
+mapper(Order, order, properties={
+    '__lines': relationship(_DummyOrderLine)
+})
 
 
 from sqlalchemy import event
 
+# standard decorator style
 @event.listens_for(Order, 'load')
 def custom_load(target, context):
-    raw_lines = context.session.query(order_lines).join(order).filter_by(id=target.id).all()
-    target._lines = {sku: qty for _, sku, qty in raw_lines}
+    breakpoint()
+    target._lines = {l.sku: l.qty for l in target.__lines}

@@ -1,9 +1,10 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from datetime import date
 
 from orm import metadata
-from domain_model import Order
+from domain_model import Order, Warehouse, Shipment, Allocation
 
 
 @pytest.fixture
@@ -89,4 +90,32 @@ def test_order_mapper_can_delete_lines(session):
     rows = list(session.execute('SELECT * FROM "order_lines" WHERE order_id=1'))
     assert rows == [
         (1, 'sku2', 13),
+    ]
+
+
+
+
+def test_rest_of_fields(session):
+    new_order = Order({'sku1': 12, 'sku2': 13})
+    warehouse = Warehouse({'whsku1': 11, 'whsku2': 12})
+    # shipment1 = Shipment({'shipsku1': 13, 'shipsku2': 13}, eta=date.today())
+    # shipment2 = Shipment({'shipsku2': 22, 'shipsku3': 34}, eta=date.today())
+    # allocation = Allocation({'asku1': warehouse, 'asku2': shipment2})
+    session.add(new_order)
+    session.add(warehouse)
+    # session.add(shipment1)
+    # session.add(shipment2)
+    # session.add(allocation)
+    session.commit()
+
+    warehouse_rows = list(session.execute('SELECT * FROM "warehouse_lines"'))
+    assert warehouse_rows == [
+        (1, 'whsku1', 12),
+        (1, 'whsku2', 12),
+    ]
+
+    warehouse_rows = list(session.execute('SELECT * FROM "warehouse"'))
+    assert warehouse_rows == [
+        (1, 'whsku1', 12),
+        (1, 'whsku2', 12),
     ]

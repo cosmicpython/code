@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
@@ -11,32 +12,40 @@ def allocate(order, warehouse, shipments):
     return allocation
 
 
+@dataclass(unsafe_hash=True)
+class AllocationLine:
+    sku: str
+    source: _Stock
 
 
 class Allocation:
 
     def __init__(self, order):
         self.order = order
-        self._sources = {}
+        self.lines = []
 
     def __getitem__(self, sku):
-        return self._sources[sku]
+        return next(l.source for l in self.lines if l.sku == sku)
+
+    def __setitem__(self, sku, source):
+        line = next(l.source for l in self.lines if l.sku == sku)
+        line.source = source
 
     def __contains__(self, sku):
-        return sku in self._sources
+        return sku in {l.sku for l in self.lines}
 
     def with_sources(self, sources: dict):
-        self._sources = sources
+        self.lines = [AllocationLine(sku, source) for sku, source in sources.items()]
         return self
 
-    def supplement_with(self, other):
-        for sku, source in other._sources.items():
-            if sku not in self:
-                self._sources[sku] = source
+    def supplement_with(self, other: Allocation):
+        for line in other.lines:
+            if line.sku not in self:
+                self.lines.append(line)
 
     def decrement_available_quantities(self):
-        for sku, source in self._sources.items():
-            source.decrement_available(sku, self.order[sku])
+        for line in self.lines:
+            line.source.decrement_available(line.sku, self.order[line.sku])
 
 
 @dataclass(unsafe_hash=True)

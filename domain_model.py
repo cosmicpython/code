@@ -1,3 +1,4 @@
+'''stripped-down domain model, just order and warehouse'''
 from __future__ import annotations
 from dataclasses import dataclass
 

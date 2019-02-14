@@ -3,6 +3,7 @@ from sqlalchemy.orm import mapper, relationship
 
 import domain_model
 
+# minimal mappings, just order and warehouse + their lines
 
 metadata = MetaData()
 

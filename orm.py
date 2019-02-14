@@ -38,37 +38,3 @@ mapper(domain_model.Warehouse, warehouse, properties={
 })
 
 
-shipment = Table(
-    'shipment', metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('eta', Date),
-)
-shipment_lines = Table(
-    'shipment_lines', metadata,
-    Column('shipment_id', ForeignKey('shipment.id'), primary_key=True),
-    Column('sku', String(255), primary_key=True),
-    Column('qty', Integer),
-)
-
-shipment_line_mapper = mapper(domain_model.Line, shipment_lines, non_primary=True)
-mapper(domain_model.Shipment, shipment, properties={
-    'lines': relationship(shipment_line_mapper, cascade="all, delete-orphan")
-})
-
-allocation = Table(
-    'allocation', metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('order_id', ForeignKey('order.id'))
-)
-
-allocation_lines = Table(
-    'allocation_lines', metadata,
-    Column('allocation_id', ForeignKey('allocation.id'), primary_key=True),
-    Column('sku', String(255), primary_key=True),
-    Column('shipment_id', ForeignKey('shipment.id'), nullable=True),
-)
-
-mapper(domain_model.AllocationLine, allocation_lines)
-mapper(domain_model.Allocation, allocation, properties={
-    'lines': relationship(domain_model.AllocationLine, cascade="all, delete-orphan"),
-})

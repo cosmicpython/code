@@ -11,7 +11,7 @@ services:
       - DB_HOST=postgres
       - DB_PASSWORD=abc123
     volumes:
-      - ./:/code
+      - ./src:/src
     ports:
       - "5005:80"
 

@@ -1,4 +1,4 @@
-from domain import model
+from allocation.domain import model
 from datetime import date
 
 

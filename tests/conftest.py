@@ -9,8 +9,8 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from adapters.orm import metadata, start_mappers
-import config
+from allocation.adapters.orm import metadata, start_mappers
+from allocation import config
 
 
 @pytest.fixture
@@ -65,6 +65,6 @@ def postgres_session(postgres_db):
 
 @pytest.fixture
 def restart_api():
-    (Path(__file__).parent / "../entrypoints/flask_app.py").touch()
+    (Path(__file__).parent / "../src/allocation/entrypoints/flask_app.py").touch()
     time.sleep(0.5)
     wait_for_webapp_to_come_up()

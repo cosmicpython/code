@@ -10,6 +10,7 @@ RUN apk del --no-cache .build-deps
 
 RUN mkdir -p /src
 COPY src/ /src/
+COPY tests/ /tests/
 RUN pip install /src
 
 WORKDIR /src

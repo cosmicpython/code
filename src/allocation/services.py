@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import model
-from model import OrderLine
-from repository import BatchRepository
+from allocation import model
+from allocation.model import OrderLine
+from allocation.repository import BatchRepository
 
 class InvalidSku(Exception):
     pass

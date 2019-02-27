@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='procurement',
+    name='allocation',
     version='0.1',
     packages=['allocation'],
 )

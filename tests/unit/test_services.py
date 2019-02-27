@@ -1,7 +1,7 @@
 import pytest
 
-import model
-import services
+from allocation import model
+from allocation import services
 
 class FakeRepository(set):
 

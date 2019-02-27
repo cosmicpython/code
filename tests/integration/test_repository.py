@@ -1,5 +1,5 @@
-import model
-import repository
+from allocation import model
+from allocation import repository
 
 def test_repository_can_save_a_batch(session):
     batch = model.Batch('batch1', 'sku1', 100, eta=None)

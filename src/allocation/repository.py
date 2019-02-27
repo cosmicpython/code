@@ -1,4 +1,4 @@
-import model
+from allocation import model
 
 class BatchRepository:
 

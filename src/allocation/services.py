@@ -2,9 +2,10 @@ from __future__ import annotations
 from typing import Optional
 from datetime import date
 
-import model
-from model import OrderLine
-from repository import AbstractRepository
+from allocation.model import OrderLine
+from allocation.repository import AbstractRepository
+from allocation import model
+
 
 class InvalidSku(Exception):
     pass

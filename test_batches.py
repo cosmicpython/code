@@ -40,3 +40,7 @@ def test_deallocate():
     batch.deallocate(line)
     assert batch.available_quantity == 20
 
+def test_can_only_deallocate_allocated_lines():
+    batch, line = make_batch_and_line("small-table", 20, 2)
+    batch.deallocate(line)
+    assert batch.available_quantity == 20

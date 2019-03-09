@@ -1,7 +1,15 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, Set
+from typing import Optional, List, Set
+
+
+def allocate(line: OrderLine, batches: List[Batch]) -> str:
+    batch = next(
+        b for b in sorted(batches) if b.can_allocate(line)
+    )
+    batch.allocate(line)
+    return batch.reference
 
 
 @dataclass(frozen=True)

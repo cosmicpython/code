@@ -1,5 +1,10 @@
-pytest
+# app
 sqlalchemy
 flask
 psycopg2-binary
+
+# tests
+pytest
+pytest-icdiff
+mypy
 requests

@@ -47,12 +47,10 @@ def test_saving_batches(session):
     batch = model.Batch("batch1", "sku1", 100, eta=None)
     session.add(batch)
     session.commit()
-    rows = list(
-        session.execute(
-            'SELECT reference, sku, _purchased_quantity, eta FROM "batches"'
-        )
+    rows = session.execute(
+        'SELECT reference, sku, _purchased_quantity, eta FROM "batches"'
     )
-    assert rows == [("batch1", "sku1", 100, None)]
+    assert list(rows) == [("batch1", "sku1", 100, None)]
 
 
 def test_saving_allocations(session):

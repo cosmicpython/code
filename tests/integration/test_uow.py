@@ -26,3 +26,31 @@ def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
     )
     assert batchid == 'batch1'
 
+
+def test_rolls_back_uncommitted_work_by_default(session_factory):
+    with unit_of_work.start(session_factory) as uow:
+        uow.session.execute(
+            'INSERT INTO batches (reference, sku, _purchased_quantity, eta)'
+            ' VALUES ("batch1", "sku1", 100, null)'
+        )
+
+    new_session = session_factory()
+    rows = list(new_session.execute('SELECT * FROM "batches"'))
+    assert rows == []
+
+
+def test_rolls_back_on_error(session_factory):
+    class MyException(Exception):
+        pass
+
+    with pytest.raises(MyException):
+        with unit_of_work.start(session_factory) as uow:
+            uow.session.execute(
+                'INSERT INTO batches (reference, sku, _purchased_quantity, eta)'
+                ' VALUES ("batch1", "sku1", 100, null)'
+            )
+            raise MyException()
+
+    new_session = session_factory()
+    rows = list(new_session.execute('SELECT * FROM "batches"'))
+    assert rows == []

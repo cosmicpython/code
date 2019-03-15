@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+import csv
+import sys
+from datetime import datetime
+from pathlib import Path
+
+from allocation.domain import model
+
+
+def load_batches(batches_path):
+    batches = []
+    with batches_path.open() as inf:
+        reader = csv.DictReader(inf)
+        for row in reader:
+            if row["eta"]:
+                eta = datetime.strptime(row["eta"], "%Y-%m-%d").date()
+            else:
+                eta = None
+            batches.append(
+                model.Batch(
+                    ref=row["ref"], sku=row["sku"], qty=int(row["qty"]), eta=eta
+                )
+            )
+    return batches
+
+
+def main(folder):
+    batches_path = Path(folder) / "batches.csv"
+    orders_path = Path(folder) / "orders.csv"
+    allocations_path = Path(folder) / "allocations.csv"
+
+    batches = load_batches(batches_path)
+
+    with orders_path.open() as inf, allocations_path.open("w") as outf:
+        reader = csv.DictReader(inf)
+        writer = csv.writer(outf)
+        writer.writerow(["orderid", "sku", "batchref"])
+        for row in reader:
+            orderid, sku = row["orderid"], row["sku"]
+            qty = int(row["qty"])
+            line = model.OrderLine(orderid, sku, qty)
+            batchref = model.allocate(line, batches)
+            writer.writerow([line.orderid, line.sku, batchref])
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])

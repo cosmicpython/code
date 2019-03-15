@@ -1,5 +1,8 @@
 # pylint: disable=redefined-outer-name
+import csv
+import shutil
 import time
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -73,3 +76,20 @@ def restart_api():
     (Path(__file__).parent / "../src/allocation/entrypoints/flask_app.py").touch()
     time.sleep(0.5)
     wait_for_webapp_to_come_up()
+
+
+@pytest.fixture
+def make_csv():
+    tempdir = tempfile.mkdtemp()
+
+    def _make_csv(filename, lines):
+        path = Path(tempdir) / filename
+        with path.open("w") as f:
+            writer = csv.writer(f)
+            for line in lines:
+                writer.writerow(line)
+        return path
+
+    yield _make_csv
+
+    shutil.rmtree(tempdir)

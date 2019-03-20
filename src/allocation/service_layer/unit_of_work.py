@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 from allocation import config
-from allocation import repository
+from allocation.adapters import repository
 
 
 class AbstractUnitOfWork(abc.ABC):

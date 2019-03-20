@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 from allocation import config
-from allocation import repository
+from allocation.adapters import repository
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -27,7 +27,11 @@ class AbstractUnitOfWork(abc.ABC):
         raise NotImplementedError
 
 
-DEFAULT_SESSION_FACTORY = sessionmaker(bind=create_engine(config.get_postgres_uri(),))
+DEFAULT_SESSION_FACTORY = sessionmaker(
+    bind=create_engine(
+        config.get_postgres_uri(),
+    )
+)
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):

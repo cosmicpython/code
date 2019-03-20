@@ -1,5 +1,6 @@
 # pylint: disable=attribute-defined-outside-init
 import abc
+from typing import Callable
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session

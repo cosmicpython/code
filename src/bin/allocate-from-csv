@@ -1,46 +1,82 @@
 #!/usr/bin/env python
+from __future__ import annotations
+from typing import Dict
 import csv
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from allocation.domain import model
+from allocation.service_layer import services, unit_of_work
+from allocation.adapters import repository
 
 
-def load_batches(batches_path):
-    batches = []
-    with batches_path.open() as inf:
-        reader = csv.DictReader(inf)
-        for row in reader:
-            if row["eta"]:
-                eta = datetime.strptime(row["eta"], "%Y-%m-%d").date()
-            else:
-                eta = None
-            batches.append(
-                model.Batch(
-                    ref=row["ref"], sku=row["sku"], qty=int(row["qty"]), eta=eta
-                )
-            )
-    return batches
+class CsvRepository(repository.AbstractRepository):
+    def __init__(self, folder):
+        self._batches_path = Path(folder) / "batches.csv"
+        self._allocations_path = Path(folder) / "allocations.csv"
+        self._batches = {}  # type: Dict[str, model.Batch]
+        self._load()
+
+    def get(self, reference):
+        return self._batches.get(reference)
+
+    def add(self, batch):
+        self._batches[batch.reference] = batch
+
+    def _load(self):
+        with self._batches_path.open() as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                ref, sku = row["ref"], row["sku"]
+                qty = int(row["qty"])
+                if row["eta"]:
+                    eta = datetime.strptime(row["eta"], "%Y-%m-%d").date()
+                else:
+                    eta = None
+                self._batches[ref] = model.Batch(ref=ref, sku=sku, qty=qty, eta=eta)
+        if self._allocations_path.exists() is False:
+            return
+        with self._allocations_path.open() as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                batchref, orderid, sku = row["batchref"], row["orderid"], row["sku"]
+                qty = int(row["qty"])
+                line = model.OrderLine(orderid, sku, qty)
+                batch = self._batches[batchref]
+                batch._allocations.add(line)
+
+    def list(self):
+        return list(self._batches.values())
+
+
+class CsvUnitOfWork(unit_of_work.AbstractUnitOfWork):
+    def __init__(self, folder):
+        self.batches = CsvRepository(folder)
+
+    def commit(self):
+        with self.batches._allocations_path.open("w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["orderid", "sku", "qty", "batchref"])
+            for batch in self.batches.list():
+                for line in batch._allocations:
+                    writer.writerow(
+                        [line.orderid, line.sku, line.qty, batch.reference]
+                    )
+
+    def rollback(self):
+        pass
 
 
 def main(folder):
-    batches_path = Path(folder) / "batches.csv"
     orders_path = Path(folder) / "orders.csv"
-    allocations_path = Path(folder) / "allocations.csv"
-
-    batches = load_batches(batches_path)
-
-    with orders_path.open() as inf, allocations_path.open("w") as outf:
-        reader = csv.DictReader(inf)
-        writer = csv.writer(outf)
-        writer.writerow(["orderid", "sku", "batchref"])
+    uow = CsvUnitOfWork(folder)
+    with orders_path.open() as f:
+        reader = csv.DictReader(f)
         for row in reader:
             orderid, sku = row["orderid"], row["sku"]
             qty = int(row["qty"])
-            line = model.OrderLine(orderid, sku, qty)
-            batchref = model.allocate(line, batches)
-            writer.writerow([line.orderid, line.sku, batchref])
+            services.allocate(orderid, sku, qty, uow)
 
 
 if __name__ == "__main__":

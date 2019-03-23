@@ -19,7 +19,7 @@ def start(session_factory=default_session_factory):
 class _UnitOfWork:
     def __init__(self, session):
         self.session = session
-        self.batches = repository.BatchRepository(session)
+        self.products = repository.ProductRepository(session)
 
     def commit(self):
         self.session.commit()

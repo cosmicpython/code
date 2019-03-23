@@ -6,8 +6,11 @@ from allocation import services
 
 class FakeRepository(set):
 
-    def get(self, reference):
-        return next(x for x in self if x.reference == reference)
+    def get(self, sku):
+        try:
+            return next(x for x in self if x.sku == sku)
+        except StopIteration:
+            return None
 
     def list(self):
         return list(self)
@@ -15,7 +18,7 @@ class FakeRepository(set):
 
 class FakeUnitOfWork:
     def __init__(self):
-        self.batches = FakeRepository()
+        self.products = FakeRepository()
         self.committed = False
 
     def commit(self):
@@ -24,9 +27,9 @@ class FakeUnitOfWork:
 
 def test_returns_allocation():
     line = model.OrderLine('o1', 'sku1', 10)
-    batch = model.Batch('b1', 'sku1', 100, eta=None)
+    product = model.Product(sku='sku1', batches=[model.Batch('b1', 'sku1', 100, eta=None)])
     uow = FakeUnitOfWork()
-    uow.batches.add(batch)
+    uow.products.add(product)
     start_uow = lambda: nullcontext(uow)
     result = services.allocate(line, start_uow)
     assert result == 'b1'
@@ -34,9 +37,9 @@ def test_returns_allocation():
 
 def test_error_for_invalid_sku():
     line = model.OrderLine('o1', 'nonexistentsku', 10)
-    batch = model.Batch('b1', 'actualsku', 100, eta=None)
     uow = FakeUnitOfWork()
-    uow.batches.add(batch)
+    uow.products.add(model.Product(sku='actualsku', batches=[]))
+    uow.products.add(model.Product(sku='othersku', batches=[]))
     start_uow = lambda: nullcontext(uow)
 
     with pytest.raises(services.InvalidSku) as ex:
@@ -47,9 +50,10 @@ def test_error_for_invalid_sku():
 
 def test_commits():
     line = model.OrderLine('o1', 'sku1', 10)
-    batch = model.Batch('b1', 'sku1', 100, eta=None)
     uow = FakeUnitOfWork()
-    uow.batches.add(batch)
+    uow.products.add(model.Product(sku='sku1', batches=[
+        model.Batch(ref='b1', sku='sku1', qty=100, eta=None),
+    ]))
     start_uow = lambda: nullcontext(uow)
 
     services.allocate(line, start_uow)

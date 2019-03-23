@@ -2,15 +2,18 @@ import pytest
 from allocation import model
 from allocation import unit_of_work
 
-def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
+def test_uow_can_retrieve_a_product_and_allocate_to_it(session_factory):
     session = session_factory()
+    session.execute(
+        'INSERT INTO products (sku) VALUES ("sku1")'
+    )
     session.execute(
         'INSERT INTO batches (reference, sku, _purchased_quantity, eta)'
         ' VALUES ("batch1", "sku1", 100, null)'
     )
     session.commit()
     with unit_of_work.start(session_factory) as uow:
-        batch = uow.batches.get(reference='batch1')
+        batch = uow.products.get(sku='sku1')
         line = model.OrderLine('ol1', 'sku1', 10)
         batch.allocate(line)
         uow.commit()

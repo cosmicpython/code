@@ -54,11 +54,16 @@ def postgres_session(postgres_db):
 
 @pytest.fixture
 def add_stock(postgres_session):
-    batches_added = set()
     skus_added = set()
+    batches_added = set()
 
     def _add_stock(lines):
         for ref, sku, qty, eta in lines:
+            if sku not in skus_added:
+                postgres_session.execute(
+                    'INSERT INTO products (sku) VALUES (:sku)',
+                    dict(sku=sku),
+                )
             postgres_session.execute(
                 'INSERT INTO batches (reference, sku, _purchased_quantity, eta)'
                 ' VALUES (:ref, :sku, :qty, :eta)',
@@ -84,6 +89,10 @@ def add_stock(postgres_session):
             dict(batch_id=batch_id),
         )
     for sku in skus_added:
+        postgres_session.execute(
+            'DELETE FROM products WHERE sku=:sku',
+            dict(sku=sku),
+        )
         postgres_session.execute(
             'DELETE FROM order_lines WHERE sku=:sku',
             dict(sku=sku),

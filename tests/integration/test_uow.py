@@ -75,8 +75,8 @@ import threading
 import traceback
 import time
 
-def try_to_allocate(sku, session_factory, exceptions):
-    line = model.OrderLine(random_ref('o'), sku, 10)
+def try_to_allocate(orderid, sku, session_factory, exceptions):
+    line = model.OrderLine(orderid, sku, 10)
     try:
         with unit_of_work.start(session_factory) as uow:
             product = uow.products.get(sku=sku)
@@ -88,16 +88,18 @@ def try_to_allocate(sku, session_factory, exceptions):
         exceptions.append(e)
 
 
-def test_concurrent_sessions_cannot_both_increment_product_version(postgres_session_factory):
+def test_integrity_of_concurrent_updates_to_product_version(postgres_session_factory):
     sku, batch = random_ref('s'), random_ref('b')
     session = postgres_session_factory()
     insert_batch(session, batch, sku, 100, eta=None, product_version=3)
     session.commit()
 
     exceptions = []
-    target = lambda: try_to_allocate(sku, postgres_session_factory, exceptions)
-    t1 = threading.Thread(target=target)
-    t2 = threading.Thread(target=target)
+    o1, o2 = random_ref('o1'), random_ref('o2')
+    target1 = lambda: try_to_allocate(o1, sku, postgres_session_factory, exceptions)
+    target2 = lambda: try_to_allocate(o2, sku, postgres_session_factory, exceptions)
+    t1 = threading.Thread(target=target1)
+    t2 = threading.Thread(target=target2)
     t1.start()
     t2.start()
     t1.join()
@@ -107,10 +109,15 @@ def test_concurrent_sessions_cannot_both_increment_product_version(postgres_sess
         "SELECT version_number FROM products WHERE sku=:sku",
         dict(sku=sku),
     )
+    assert version == 5
     assert exceptions == []
-    assert version == 4
-    assert list(session.execute(
-        "SELECT * FROM allocations JOIN batches ON allocations.batch_id = batches.id WHERE sku=:sku",
+    orders = list(session.execute(
+        "SELECT orderid FROM allocations"
+        " JOIN batches ON allocations.batch_id = batches.id"
+        " JOIN order_lines ON allocations.orderline_id = order_lines.id"
+        " WHERE order_lines.sku=:sku",
         dict(sku=sku),
-    )) == []
+    ))
+    orders = set([orders[0][0], orders[1][0]])
+    assert orders == {o1, o2}
 

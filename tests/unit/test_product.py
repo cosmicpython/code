@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 import pytest
 
-from allocation.model import allocate, Product, OrderLine, Batch, OutOfStock
+from allocation.model import Product, OrderLine, Batch, OutOfStock
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
@@ -51,3 +51,10 @@ def test_raises_out_of_stock_exception_if_cannot_allocate():
         product.allocate(sku2_line)
     assert 'sku2' in str(ex)
 
+
+def test_increments_version_number():
+    line = OrderLine('oref', 'sku1', 10)
+    product = Product(sku='sku1', batches=[Batch('b1', 'sku1', 100, eta=None)])
+    product.version_number = 7
+    product.allocate(line)
+    assert product.version_number == 8

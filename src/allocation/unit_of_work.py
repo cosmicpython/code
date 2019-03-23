@@ -1,6 +1,5 @@
 # pylint: disable=attribute-defined-outside-init
 import abc
-from typing import Callable
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -25,12 +24,12 @@ class AbstractUnitOfWork(abc.ABC):
     def rollback(self):
         raise NotImplementedError
 
-    def init_repositories(self, batches: repository.AbstractRepository):
-        self._batches = batches
+    def init_repositories(self, products: repository.AbstractRepository):
+        self._products = products
 
     @property
-    def batches(self) -> repository.AbstractRepository:
-        return self._batches
+    def products(self) -> repository.AbstractRepository:
+        return self._products
 
 
 

@@ -9,8 +9,5 @@ class ProductRepository:
         self.session.add(product)
 
     def get(self, sku):
-        return self.session.query(model.Product) \
-                           .filter_by(sku=sku) \
-                           .with_for_update() \
-                           .first()
+        return self.session.query(model.Product).filter_by(sku=sku).first()
 

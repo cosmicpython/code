@@ -67,10 +67,10 @@ import threading
 import traceback
 import time
 
-def try_to_allocate(orderid, sku, session_factory, exceptions):
+def try_to_allocate(orderid, sku, exceptions):
     line = model.OrderLine(orderid, sku, 10)
     try:
-        with unit_of_work.start(session_factory) as uow:
+        with unit_of_work.start() as uow:
             product = uow.products.get(sku=sku)
             product.allocate(line)
             time.sleep(0.2)
@@ -80,7 +80,7 @@ def try_to_allocate(orderid, sku, session_factory, exceptions):
         exceptions.append(e)
 
 
-def test_integrity_of_concurrent_updates_to_product_version(postgres_session_factory):
+def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory):
     sku, batch = random_ref('s'), random_ref('b')
     session = postgres_session_factory()
     session.execute(
@@ -95,8 +95,8 @@ def test_integrity_of_concurrent_updates_to_product_version(postgres_session_fac
     session.commit()
     exceptions = []
     o1, o2 = random_ref('o1'), random_ref('o2')
-    target1 = lambda: try_to_allocate(o1, sku, postgres_session_factory, exceptions)
-    target2 = lambda: try_to_allocate(o2, sku, postgres_session_factory, exceptions)
+    target1 = lambda: try_to_allocate(o1, sku, exceptions)
+    target2 = lambda: try_to_allocate(o2, sku, exceptions)
     t1 = threading.Thread(target=target1)
     t2 = threading.Thread(target=target2)
     t1.start()
@@ -107,8 +107,10 @@ def test_integrity_of_concurrent_updates_to_product_version(postgres_session_fac
         "SELECT version_number FROM products WHERE sku=:sku",
         dict(sku=sku),
     )
-    assert version == 5
-    assert exceptions == []
+    assert version == 4
+    exception = [exceptions]
+    assert 'could not serialize access due to concurrent update' in str(exception)
+
     orders = list(session.execute(
         "SELECT orderid FROM allocations"
         " JOIN batches ON allocations.batch_id = batches.id"
@@ -116,6 +118,7 @@ def test_integrity_of_concurrent_updates_to_product_version(postgres_session_fac
         " WHERE order_lines.sku=:sku",
         dict(sku=sku),
     ))
-    orders = set([orders[0][0], orders[1][0]])
-    assert orders == {o1, o2}
+    assert len(orders) == 1
+    with unit_of_work.start() as uow:
+        uow.session.execute('select 1')
 

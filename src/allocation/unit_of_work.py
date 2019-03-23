@@ -5,7 +5,10 @@ from sqlalchemy.orm import sessionmaker
 from allocation import config
 from allocation import repository
 
-default_session_factory = sessionmaker(bind=create_engine(config.get_postgres_uri()))
+default_session_factory = sessionmaker(bind=create_engine(
+    config.get_postgres_uri(),
+    isolation_level="SERIALIZABLE"
+))
 
 @contextmanager
 def start(session_factory=default_session_factory):

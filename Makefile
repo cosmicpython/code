@@ -1,5 +1,10 @@
+build:
+	docker-compose build
+
+up:
+	docker-compose up -d app
+
 test:
 	pytest --tb=short
 
-watch-tests:
-	ls *.py | entr pytest --tb=short
+all: build up test

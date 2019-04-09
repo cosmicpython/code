@@ -1,5 +1,7 @@
+from unittest import mock
 import pytest
 from allocation.adapters import repository
+from allocation.domain.model import OutOfStock
 from allocation.service_layer import services, unit_of_work
 
 
@@ -32,7 +34,7 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 def test_add_batch_for_new_product():
     uow = FakeUnitOfWork()
     services.add_batch("b1", "CRUNCHY-ARMCHAIR", 100, None, uow)
-    assert uow.products.get('CRUNCHY-ARMCHAIR') is not None
+    assert uow.products.get("CRUNCHY-ARMCHAIR") is not None
     assert uow.committed
 
 
@@ -63,3 +65,16 @@ def test_allocate_commits():
     services.add_batch("b1", "OMINOUS-MIRROR", 100, None, uow)
     services.allocate("o1", "OMINOUS-MIRROR", 10, uow)
     assert uow.committed
+
+
+def test_sends_email_on_out_of_stock_error():
+    uow = FakeUnitOfWork()
+    services.add_batch("b1", "POPULAR-CURTAINS", 9, None, uow)
+
+    with mock.patch("allocation.adapters.email.send_mail") as mock_send_mail:
+        with pytest.raises(OutOfStock):
+            services.allocate("o1", "POPULAR-CURTAINS", 10, uow)
+        assert mock_send_mail.call_args == mock.call(
+            "stock@made.com",
+            f"Out of stock for POPULAR-CURTAINS",
+        )

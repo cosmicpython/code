@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from allocation import config
-from allocation import repository
+from allocation import config, messagebus, repository
+
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -16,8 +16,13 @@ class AbstractUnitOfWork(abc.ABC):
     def __exit__(self, *args):
         self.rollback()
 
-    @abc.abstractmethod
     def commit(self):
+        self._commit()
+        for obj in self.products.seen:
+            messagebus.handle(obj.events)
+
+    @abc.abstractmethod
+    def _commit(self):
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -44,9 +49,8 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.session = session_factory()  # type: Session
         self.init_repositories(repository.SqlAlchemyRepository(self.session))
 
-    def commit(self):
+    def _commit(self):
         self.session.commit()
 
     def rollback(self):
         self.session.rollback()
-

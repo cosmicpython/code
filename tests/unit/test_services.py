@@ -21,7 +21,7 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
         self.init_repositories(FakeRepository([]))
         self.committed = False
 
-    def commit(self):
+    def _commit(self):
         self.committed = True
 
     def rollback(self):

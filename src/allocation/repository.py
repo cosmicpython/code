@@ -17,10 +17,15 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def __init__(self, session):
         self.session = session
+        self.seen = set()
 
     def add(self, product):
+        self.seen.add(product)
         self.session.add(product)
 
     def get(self, sku):
-        return self.session.query(model.Product).filter_by(sku=sku).first()
+        p = self.session.query(model.Product).filter_by(sku=sku).first()
+        if p:
+            self.seen.add(p)
+        return p
 

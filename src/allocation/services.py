@@ -2,13 +2,8 @@ from __future__ import annotations
 from typing import Optional
 from datetime import date
 
+from allocation import exceptions, model, unit_of_work
 from allocation.model import OrderLine
-from allocation import model, unit_of_work
-
-
-
-class InvalidSku(Exception):
-    pass
 
 
 def add_batch(
@@ -32,7 +27,7 @@ def allocate(
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
-            raise InvalidSku(f'Invalid sku {line.sku}')
+            raise exceptions.InvalidSku(f'Invalid sku {line.sku}')
         batchref = product.allocate(line)
         uow.commit()
     return batchref

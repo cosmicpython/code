@@ -1,5 +1,5 @@
 import pytest
-from allocation import repository, services, unit_of_work
+from allocation import services, exceptions, repository, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):
@@ -53,7 +53,7 @@ def test_allocate_errors_for_invalid_sku():
     uow = FakeUnitOfWork()
     services.add_batch("b1", "AREALSKU", 100, None, uow)
 
-    with pytest.raises(services.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
+    with pytest.raises(exceptions.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
         services.allocate("o1", "NONEXISTENTSKU", 10, uow)
 
 

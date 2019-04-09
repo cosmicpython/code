@@ -2,10 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List, Set
-
-
-class OutOfStock(Exception):
-    pass
+from allocation import exceptions
 
 
 class Product:
@@ -24,7 +21,7 @@ class Product:
             self.version_number += 1
             return batch.reference
         except StopIteration:
-            raise OutOfStock(f'Out of stock for sku {line.sku}')
+            raise exceptions.OutOfStock(f'Out of stock for sku {line.sku}')
 
 
 @dataclass(unsafe_hash=True)

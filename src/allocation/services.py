@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional
 from datetime import date
 
-from allocation import exceptions, messagebus, model, unit_of_work
+from allocation import exceptions, model, unit_of_work
 from allocation.model import OrderLine
 
 
@@ -28,9 +28,6 @@ def allocate(
         product = uow.products.get(sku=line.sku)
         if product is None:
             raise exceptions.InvalidSku(f'Invalid sku {line.sku}')
-        try:
-            batchref = product.allocate(line)
-            uow.commit()
-            return batchref
-        finally:
-            messagebus.handle(product.events)
+        batchref = product.allocate(line)
+        uow.commit()
+        return batchref

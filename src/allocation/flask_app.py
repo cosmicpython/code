@@ -1,10 +1,6 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
-
-from allocation import unit_of_work
-from allocation import model
-from allocation import services
-from allocation import orm
+from allocation import exceptions, orm, services, unit_of_work
 
 app = Flask(__name__)
 orm.start_mappers()
@@ -31,7 +27,7 @@ def allocate_endpoint():
             request.json['qty'],
             unit_of_work.SqlAlchemyUnitOfWork(),
         )
-    except (model.OutOfStock, services.InvalidSku) as e:
+    except (exceptions.OutOfStock, exceptions.InvalidSku) as e:
         return jsonify({'message': str(e)}), 400
 
     return jsonify({'batchref': batchref}), 201

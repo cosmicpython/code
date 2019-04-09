@@ -4,7 +4,6 @@ from datetime import date
 
 from allocation.domain import model
 from allocation.domain.model import OrderLine
-from . import messagebus
 if TYPE_CHECKING:
     from . import unit_of_work
 
@@ -35,9 +34,6 @@ def allocate(
         product = uow.products.get(sku=line.sku)
         if product is None:
             raise InvalidSku(f'Invalid sku {line.sku}')
-        try:
-            batchref = product.allocate(line)
-            uow.commit()
-            return batchref
-        finally:
-            messagebus.handle(product.events)
+        batchref = product.allocate(line)
+        uow.commit()
+        return batchref

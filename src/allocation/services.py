@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional
 from datetime import date
 
-from allocation import email, exceptions, model, unit_of_work
+from allocation import exceptions, messagebus, model, unit_of_work
 from allocation.model import OrderLine
 
 
@@ -32,6 +32,5 @@ def allocate(
             batchref = product.allocate(line)
             uow.commit()
             return batchref
-        except exceptions.OutOfStock:
-            email.send_mail('stock@made.com', f'Out of stock for {line.sku}')
-            raise
+        finally:
+            messagebus.handle(product.events)

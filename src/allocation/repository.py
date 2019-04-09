@@ -1,5 +1,7 @@
 import abc
+from typing import Set
 from allocation import model
+
 
 class AbstractRepository(abc.ABC):
 
@@ -17,9 +19,14 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def __init__(self, session):
         self.session = session
+        self.seen = set()  # type: Set[model.Product]
 
     def add(self, product):
+        self.seen.add(product)
         self.session.add(product)
 
     def get(self, sku):
-        return self.session.query(model.Product).filter_by(sku=sku).first()
+        product = self.session.query(model.Product).filter_by(sku=sku).first()
+        if product:
+            self.seen.add(product)
+        return product

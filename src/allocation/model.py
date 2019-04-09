@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List, Set
 from allocation import exceptions
+from allocation import email
 
 
 class Product:
@@ -21,6 +22,7 @@ class Product:
             self.version_number += 1
             return batch.reference
         except StopIteration:
+            email.send_mail('stock@made.com', f'Out of stock for {line.sku}')
             raise exceptions.OutOfStock(f'Out of stock for sku {line.sku}')
 
 

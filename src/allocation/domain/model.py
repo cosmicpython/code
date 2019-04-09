@@ -2,7 +2,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List, Set
-from allocation.adapters import email
 
 
 class OutOfStock(Exception):
@@ -25,7 +24,6 @@ class Product:
             self.version_number += 1
             return batch.reference
         except StopIteration:
-            email.send_mail('stock@made.com', f'Out of stock for {line.sku}')
             raise OutOfStock(f'Out of stock for sku {line.sku}')
 
 
@@ -82,4 +80,3 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
-

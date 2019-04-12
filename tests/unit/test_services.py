@@ -35,26 +35,24 @@ def test_returns_allocation():
 
 
 def test_error_for_invalid_sku():
-    line = model.OrderLine('o1', 'nonexistentsku', 10)
     uow = FakeUnitOfWork()
     uow.products.add(model.Product(sku='actualsku', batches=[]))
     uow.products.add(model.Product(sku='othersku', batches=[]))
     start_uow = lambda: nullcontext(uow)
 
     with pytest.raises(services.InvalidSku) as ex:
-        services.allocate(line, start_uow)
+        services.allocate_(start_uow, 'o1', 'nonexistentsku', 10)
 
     assert 'Invalid sku nonexistentsku' in str(ex)
 
 
 def test_commits():
-    line = model.OrderLine('o1', 'sku1', 10)
     uow = FakeUnitOfWork()
     uow.products.add(model.Product(sku='sku1', batches=[
         model.Batch(ref='b1', sku='sku1', qty=100, eta=None),
     ]))
     start_uow = lambda: nullcontext(uow)
 
-    services.allocate(line, start_uow)
+    services.allocate_(start_uow, 'o1', 'sku1', 10)
     assert uow.committed is True
 

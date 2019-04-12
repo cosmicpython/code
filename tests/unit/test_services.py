@@ -26,10 +26,10 @@ class FakeUnitOfWork:
 
 
 def test_returns_allocation():
-    product = model.Product(sku='sku1', batches=[model.Batch('b1', 'sku1', 100, eta=None)])
     uow = FakeUnitOfWork()
-    uow.products.add(product)
     start_uow = lambda: nullcontext(uow)
+
+    services.add_stock(start_uow, 'b1', 'sku1', 100)
     result = services.allocate_(start_uow, 'o1', 'sku1', 10)
     assert result == 'b1'
 

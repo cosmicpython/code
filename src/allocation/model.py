@@ -10,10 +10,13 @@ class OutOfStock(Exception):
 
 class Product:
 
-    def __init__(self, sku: str, batches: List[Batch], version_number: int = 0):
+    def __init__(self, sku: str, batches: List[Batch]=None, version_number: int = 0):
         self.sku = sku
-        self.batches = batches
+        self.batches = batches or []
         self.version_number = version_number
+
+    def add_batch(self, ref: str, qty: int, eta: Optional[date]=None):
+        self.batches.append(Batch(ref, self.sku, qty, eta))
 
     def allocate(self, line: OrderLine) -> str:
         try:

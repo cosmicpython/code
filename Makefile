@@ -7,4 +7,7 @@ api:
 test:
 	pytest --tb=short
 
+logs:
+	docker-compose logs app | tail -100
+
 all: build api test

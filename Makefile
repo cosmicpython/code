@@ -7,4 +7,7 @@ up:
 test:
 	pytest --tb=short
 
+logs:
+	docker-compose logs app | tail -100
+
 all: build up test

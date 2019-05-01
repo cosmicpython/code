@@ -16,7 +16,10 @@ def is_valid_sku(sku, batches):
 
 
 def add_batch(
-    ref: str, sku: str, qty: int, eta: Optional[date],
+    ref: str,
+    sku: str,
+    qty: int,
+    eta: Optional[date],
     uow: unit_of_work.AbstractUnitOfWork,
 ):
     with uow:
@@ -25,7 +28,9 @@ def add_batch(
 
 
 def allocate(
-    orderid: str, sku: str, qty: int,
+    orderid: str,
+    sku: str,
+    qty: int,
     uow: unit_of_work.AbstractUnitOfWork,
 ) -> str:
     line = OrderLine(orderid, sku, qty)

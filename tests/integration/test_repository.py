@@ -26,7 +26,6 @@ def test_repository_can_save_a_batch(django_models):
     assert saved_batch.eta == batch.eta
 
 
-@pytest.mark.skip("foo")
 @pytest.mark.django_db
 def test_repository_can_retrieve_a_batch_with_allocations(django_models):
     sku = "PONY-STATUE"

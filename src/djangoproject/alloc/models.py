@@ -20,13 +20,22 @@ class Batch(models.Model):
         return b
 
     def to_domain(self):
-        return domain_model.Batch(ref=self.reference, sku=self.sku, qty=self.qty)
+        b = domain_model.Batch(
+            ref=self.reference, sku=self.sku, qty=self.qty, eta=self.eta
+        )
+        b._allocations = set(a.line.to_domain() for a in self.allocation_set.all())
+        return b
 
 
 class OrderLine(models.Model):
     orderid = models.CharField(max_length=255)
     sku = models.CharField(max_length=255)
     qty = models.IntegerField()
+
+    def to_domain(self):
+        return domain_model.OrderLine(
+            orderid=self.orderid, sku=self.sku, qty=self.qty
+        )
 
 
 class Allocation(models.Model):

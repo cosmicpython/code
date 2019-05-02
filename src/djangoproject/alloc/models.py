@@ -9,7 +9,7 @@ class Batch(models.Model):
     eta = models.DateField(blank=True, null=True)
 
     @classmethod
-    def from_domain(self, batch: domain_model.Batch):
+    def update_from_domain(self, batch: domain_model.Batch):
         try:
             b = Batch.objects.get(reference=batch.reference)
         except Batch.DoesNotExist:
@@ -17,7 +17,7 @@ class Batch(models.Model):
         b.sku = batch.sku
         b.qty = batch._purchased_quantity
         b.eta = batch.eta
-        return b
+        b.save()
 
     def to_domain(self):
         b = domain_model.Batch(

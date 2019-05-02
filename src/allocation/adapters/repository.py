@@ -19,7 +19,7 @@ class DjangoRepository(AbstractRepository):
         self.django_models = models
 
     def add(self, batch):
-        self.django_models.Batch.from_domain(batch).save()
+        self.django_models.Batch.update_from_domain(batch)
 
     def get(self, reference):
         return (

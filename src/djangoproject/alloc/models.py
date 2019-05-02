@@ -19,7 +19,7 @@ class Batch(models.Model):
         b.eta = batch.eta
         b.save()
 
-    def to_domain(self):
+    def to_domain(self) -> domain_model.Batch:
         b = domain_model.Batch(
             ref=self.reference, sku=self.sku, qty=self.qty, eta=self.eta
         )

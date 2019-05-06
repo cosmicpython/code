@@ -1,7 +1,6 @@
 # app
-sqlalchemy
-flask
 psycopg2-binary
+django
 
 # tests
 pytest

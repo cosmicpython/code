@@ -30,7 +30,7 @@ def test_uow_can_retrieve_a_batch_and_allocate_to_it(django_models):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_rolls_back_uncommitted_work_by_default(django_models):
+def test_rolls_back_uncommitted_work_by_default():
     uow = unit_of_work.DjangoUnitOfWork()
     with uow:
         insert_batch(django_models, "batch1", "MEDIUM-PLINTH", 100, None)

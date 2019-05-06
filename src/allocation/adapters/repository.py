@@ -1,3 +1,4 @@
+# pylint: disable=no-member, no-self-use
 from typing import Set
 import abc
 from allocation.domain import model
@@ -17,7 +18,7 @@ class AbstractRepository(abc.ABC):
         return p
 
     @abc.abstractmethod
-    def _get(self, sku):
+    def _get(self, reference):
         raise NotImplementedError
 
 
@@ -41,3 +42,6 @@ class DjangoRepository(AbstractRepository):
             .first()
             .to_domain()
         )
+
+    def list(self):
+        return [b.to_domain() for b in self.django_models.Batch.objects.all()]

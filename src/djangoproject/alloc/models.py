@@ -17,14 +17,20 @@ class Batch(models.Model):
         b.sku = batch.sku
         b.qty = batch._purchased_quantity
         b.eta = batch.eta
-        b.allocation_set.set(Allocation.from_domain(l, b) for l in batch._allocations)
         b.save()
+        b.allocation_set.set(
+            Allocation.from_domain(l, b)
+            for l in batch._allocations
+        )
 
     def to_domain(self) -> domain_model.Batch:
         b = domain_model.Batch(
             ref=self.reference, sku=self.sku, qty=self.qty, eta=self.eta
         )
-        b._allocations = set(a.line.to_domain() for a in self.allocation_set.all())
+        b._allocations = set(
+            a.line.to_domain()
+            for a in self.allocation_set.all()
+        )
         return b
 
 

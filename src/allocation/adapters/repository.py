@@ -23,14 +23,19 @@ class AbstractRepository(abc.ABC):
 
 class DjangoRepository(AbstractRepository):
     def __init__(self):
+        super().__init__()
         from djangoproject.alloc import models
 
         self.django_models = models
 
     def add(self, batch):
+        super().add(batch)
+        self.update(batch)
+
+    def update(self, batch):
         self.django_models.Batch.update_from_domain(batch)
 
-    def get(self, reference):
+    def _get(self, reference):
         return (
             self.django_models.Batch.objects.filter(reference=reference)
             .first()

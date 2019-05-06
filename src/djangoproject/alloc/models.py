@@ -8,8 +8,8 @@ class Batch(models.Model):
     qty = models.IntegerField()
     eta = models.DateField(blank=True, null=True)
 
-    @classmethod
-    def update_from_domain(self, batch: domain_model.Batch):
+    @staticmethod
+    def update_from_domain(batch: domain_model.Batch):
         try:
             b = Batch.objects.get(reference=batch.reference)
         except Batch.DoesNotExist:
@@ -17,6 +17,7 @@ class Batch(models.Model):
         b.sku = batch.sku
         b.qty = batch._purchased_quantity
         b.eta = batch.eta
+        b.allocation_set.set(Allocation.from_domain(l, b) for l in batch._allocations)
         b.save()
 
     def to_domain(self) -> domain_model.Batch:
@@ -37,7 +38,22 @@ class OrderLine(models.Model):
             orderid=self.orderid, sku=self.sku, qty=self.qty
         )
 
+    @staticmethod
+    def from_domain(line):
+        l, _ = OrderLine.objects.get_or_create(
+            orderid=line.orderid, sku=line.sku, qty=line.qty
+        )
+        return l
+
 
 class Allocation(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
     line = models.ForeignKey(OrderLine, on_delete=models.CASCADE)
+
+    @staticmethod
+    def from_domain(domain_line, django_batch):
+        a, _ = Allocation.objects.get_or_create(
+            line=OrderLine.from_domain(domain_line),
+            batch=django_batch,
+        )
+        return a

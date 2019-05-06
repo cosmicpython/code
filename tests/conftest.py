@@ -7,7 +7,13 @@ import requests
 from requests.exceptions import ConnectionError
 
 from allocation import config
-from allocation.adapters.orm import metadata, start_mappers
+
+
+@pytest.fixture
+def django_models():
+    from djangoproject.alloc import models
+
+    return models
 
 
 def wait_for_postgres_to_come_up(engine):

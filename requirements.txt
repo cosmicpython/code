@@ -1,6 +1,7 @@
 # app
 psycopg2-binary
 django
+dj-database-url
 
 # tests
 pytest

@@ -31,3 +31,13 @@ def allocate(
         batchref = product.allocate(line)
         uow.commit()
         return batchref
+
+
+def change_batch_quantity(
+        ref: str, qty: int,
+        uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        product = uow.products.get_by_batchref(batchref=ref)
+        product.change_batch_quantity(ref=ref, qty=qty)
+        uow.commit()

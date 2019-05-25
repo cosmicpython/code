@@ -92,9 +92,9 @@ def restart_api():
 
 @pytest.fixture
 def restart_redis_pubsub():
+    wait_for_redis_to_come_up()
     if not shutil.which('docker-compose'):
         print('skipping restart, assumes running in container')
         return
     subprocess.run(['docker-compose', 'restart', '-t', '0', 'redis_pubsub'])
-    wait_for_redis_to_come_up()
 

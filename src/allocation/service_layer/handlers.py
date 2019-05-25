@@ -1,15 +1,14 @@
 from __future__ import annotations
-import typing
+from typing import TYPE_CHECKING
+from allocation.adapters import email
 from allocation.domain import events, model
 from allocation.domain.model import OrderLine
-
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from . import unit_of_work
 
 
 class InvalidSku(Exception):
     pass
-
 
 
 def add_batch(
@@ -37,6 +36,16 @@ def allocate(
         batchref = product.allocate(line)
         uow.commit()
         return batchref
+
+
+
+def change_batch_quantity(
+        event: events.BatchQuantityChanged, uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        product = uow.products.get_by_batchref(batchref=event.ref)
+        product.change_batch_quantity(ref=event.ref, qty=event.qty)
+        uow.commit()
 
 
 # pylint: disable=unused-argument

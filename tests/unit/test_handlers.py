@@ -1,3 +1,4 @@
+from datetime import date
 from unittest import mock
 import pytest
 from allocation import events, exceptions, messagebus, repository, unit_of_work
@@ -27,7 +28,6 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
     def rollback(self):
         pass
-
 
 
 class TestAddBatch:
@@ -84,3 +84,35 @@ class TestAllocate:
                 "stock@made.com",
                 f"Out of stock for POPULAR-CURTAINS",
             )
+
+
+class TestChangeBatchQuantity:
+
+    @staticmethod
+    def test_changes_available_quantity():
+        uow = FakeUnitOfWork()
+        messagebus.handle(events.BatchCreated("batch1", "ADORABLE-SETTEE", 100, None), uow)
+        [batch] = uow.products.get(sku="ADORABLE-SETTEE").batches
+        assert batch.available_quantity == 100
+
+        messagebus.handle(events.BatchQuantityChanged("batch1", 50), uow)
+
+        assert batch.available_quantity == 50
+
+
+    @staticmethod
+    def test_reallocates_if_necessary():
+        uow = FakeUnitOfWork()
+        messagebus.handle(events.BatchCreated("batch1", "INDIFFERENT-TABLE", 50, None), uow)
+        messagebus.handle(events.BatchCreated("batch2", "INDIFFERENT-TABLE", 50, date.today()), uow)
+        messagebus.handle(events.AllocationRequired("order1", "INDIFFERENT-TABLE", 20), uow)
+        messagebus.handle(events.AllocationRequired("order2", "INDIFFERENT-TABLE", 20), uow)
+        [batch1, batch2] = uow.products.get(sku="INDIFFERENT-TABLE").batches
+        assert batch1.available_quantity == 10
+
+        messagebus.handle(events.BatchQuantityChanged("batch1", 25), uow)
+
+        # order1 or order2 will be deallocated, so we"ll have 25 - 20 * 1
+        assert batch1.available_quantity == 5
+        # and 20 will be reallocated to the next batch
+        assert batch2.available_quantity == 30

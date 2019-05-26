@@ -3,7 +3,7 @@ import logging
 from dataclasses import asdict
 import redis
 
-from allocation import config, orm
+from allocation import config, events, orm, messagebus, unit_of_work
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,8 @@ def main():
 def handle_change_batch_quantity(m):
     logging.debug('handling %s', m)
     data = json.loads(m['data'])
-    handlers.change_batch_quantity(
-        ref=data['batchref'], qty=data['qty'],
-        uow=unit_of_work.SqlAlchemyUnitOfWork(),
-    )
+    event = events.BatchQuantityChanged(ref=data['batchref'], qty=data['qty'])
+    messagebus.handle([event], uow=unit_of_work.SqlAlchemyUnitOfWork())
 
 
 def publish(channel, event):

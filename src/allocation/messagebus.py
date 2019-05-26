@@ -4,10 +4,15 @@ from allocation import email, events, handlers, redis_pubsub
 
 
 def handle(events_: List[events.Event], uow: unit_of_work.AbstractUnitOfWork):
+    results = []
     while events_:
         event = events_.pop(0)
+        print('handling message', event, flush=True)
         for handler in HANDLERS[type(event)]:
-            handler(event, uow=uow)
+            r = handler(event, uow=uow)
+            print('got result', r, flush=True)
+            results.append(r)
+    return results
 
 
 HANDLERS = {

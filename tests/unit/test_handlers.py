@@ -69,11 +69,11 @@ class TestAllocate:
     @staticmethod
     def test_returns_allocation():
         uow = FakeUnitOfWork()
-        result = messagebus.handle([
+        results = messagebus.handle([
             events.BatchCreated("b1", "COMPLICATED-LAMP", 100, None),
-            events.AllocationRequest("o1", "COMPLICATED-LAMP", 10 )
+            events.AllocationRequest("o1", "COMPLICATED-LAMP", 10),
         ], uow)
-        assert result == "b1"
+        assert results.pop() == "b1"
 
     @staticmethod
     def test_errors_for_invalid_sku():
@@ -84,7 +84,6 @@ class TestAllocate:
             messagebus.handle([
                 events.AllocationRequest("o1", "NONEXISTENTSKU", 10)
             ], uow)
-
 
     @staticmethod
     def test_commits():

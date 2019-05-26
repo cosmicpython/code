@@ -2,7 +2,7 @@ import json
 from dataclasses import asdict
 import redis
 
-from allocation import config, orm, services, unit_of_work
+from allocation import config, orm
 
 r = redis.Redis(**config.get_redis_host_and_port())
 
@@ -19,7 +19,7 @@ def main():
 def handle_change_batch_quantity(m):
     print('handling', m, flush=True)
     data = json.loads(m['data'])
-    services.change_batch_quantity(
+    handlers.change_batch_quantity(
         ref=data['batchref'], qty=data['qty'],
         uow=unit_of_work.SqlAlchemyUnitOfWork(),
     )

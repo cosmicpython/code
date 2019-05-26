@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
-from allocation import exceptions, orm, services, unit_of_work
+from allocation import exceptions, orm, handlers, unit_of_work
 
 app = Flask(__name__)
 orm.start_mappers()
@@ -11,7 +11,7 @@ def add_batch():
     eta = request.json['eta']
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
-    services.add_batch(
+    handlers.add_batch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
         unit_of_work.SqlAlchemyUnitOfWork(),
     )
@@ -21,7 +21,7 @@ def add_batch():
 @app.route("/allocate", methods=['POST'])
 def allocate_endpoint():
     try:
-        batchref = services.allocate(
+        batchref = handlers.allocate(
             request.json['orderid'],
             request.json['sku'],
             request.json['qty'],

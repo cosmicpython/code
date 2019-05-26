@@ -19,7 +19,7 @@ class AbstractUnitOfWork(abc.ABC):
     def commit(self):
         self._commit()
         for obj in self.products.seen:
-            messagebus.handle(obj.events)
+            messagebus.handle(obj.events, uow=self)
 
     @abc.abstractmethod
     def _commit(self):

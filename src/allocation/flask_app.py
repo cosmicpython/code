@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
-from allocation import exceptions, orm, handlers, unit_of_work
+from allocation import events, exceptions, messagebus, orm, unit_of_work
 
 app = Flask(__name__)
 orm.start_mappers()
@@ -11,22 +11,21 @@ def add_batch():
     eta = request.json['eta']
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
-    handlers.add_batch(
+    event = events.BatchCreated(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
-        unit_of_work.SqlAlchemyUnitOfWork(),
     )
+    messagebus.handle([event], unit_of_work.SqlAlchemyUnitOfWork())
     return 'OK', 201
 
 
 @app.route("/allocate", methods=['POST'])
 def allocate_endpoint():
     try:
-        batchref = handlers.allocate(
-            request.json['orderid'],
-            request.json['sku'],
-            request.json['qty'],
-            unit_of_work.SqlAlchemyUnitOfWork(),
+        event = events.AllocationRequest(
+            request.json['orderid'], request.json['sku'], request.json['qty'],
         )
+        results = messagebus.handle([event], unit_of_work.SqlAlchemyUnitOfWork())
+        batchref = results.pop()
     except exceptions.InvalidSku as e:
         return jsonify({'message': str(e)}), 400
 

@@ -3,7 +3,7 @@ import logging
 from dataclasses import asdict
 import redis
 
-from allocation import config, orm, services, unit_of_work
+from allocation import config, orm
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def main():
 def handle_change_batch_quantity(m):
     logging.debug('handling %s', m)
     data = json.loads(m['data'])
-    services.change_batch_quantity(
+    handlers.change_batch_quantity(
         ref=data['batchref'], qty=data['qty'],
         uow=unit_of_work.SqlAlchemyUnitOfWork(),
     )

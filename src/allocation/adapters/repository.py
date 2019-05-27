@@ -1,14 +1,23 @@
+from typing import Set
 import abc
 from allocation.domain import model
 
 
 class AbstractRepository(abc.ABC):
-    @abc.abstractmethod
+    def __init__(self):
+        self.seen = set()  # type: Set[model.Batch]
+
     def add(self, batch: model.Batch):
-        raise NotImplementedError
+        self.seen.add(batch)
+
+    def get(self, reference) -> model.Batch:
+        p = self._get(reference)
+        if p:
+            self.seen.add(p)
+        return p
 
     @abc.abstractmethod
-    def get(self, reference) -> model.Batch:
+    def _get(self, sku):
         raise NotImplementedError
 
 

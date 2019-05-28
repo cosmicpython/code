@@ -37,4 +37,3 @@ HANDLERS = {
     events.Deallocated: [reallocate],
 
 }  # type: Dict[Type[events.Event], List[Callable]]
-

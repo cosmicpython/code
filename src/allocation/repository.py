@@ -1,6 +1,7 @@
 from typing import Set
 import abc
-from allocation import model
+from allocation import model, orm
+
 
 class AbstractRepository(abc.ABC):
 
@@ -17,6 +18,12 @@ class AbstractRepository(abc.ABC):
             self.seen.add(p)
         return p
 
+    def get_by_batchref(self, batchref):
+        p = self._get_by_batchref(batchref)
+        if p:
+            self.seen.add(p)
+        return p
+
     @abc.abstractmethod
     def _add(self, product):
         raise NotImplementedError
@@ -24,6 +31,11 @@ class AbstractRepository(abc.ABC):
     @abc.abstractmethod
     def _get(self, sku):
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_by_batchref(self, batchref):
+        raise NotImplementedError
+
 
 
 
@@ -38,4 +50,9 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def _get(self, sku):
         return self.session.query(model.Product).filter_by(sku=sku).first()
+
+    def _get_by_batchref(self, batchref):
+        return self.session.query(model.Product).join(model.Batch).filter(
+            orm.batches.c.reference == batchref,
+        ).first()
 

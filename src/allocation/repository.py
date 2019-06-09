@@ -1,14 +1,28 @@
+from typing import Set
 import abc
 from allocation import model
 
 class AbstractRepository(abc.ABC):
 
-    @abc.abstractmethod
+    def __init__(self):
+        self.seen = set()  # type: Set[model.Product]
+
     def add(self, product):
+        self._add(product)
+        self.seen.add(product)
+
+    def get(self, sku):
+        p = self._get(sku)
+        if p:
+            self.seen.add(p)
+        return p
+
+    @abc.abstractmethod
+    def _add(self, product):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, sku):
+    def _get(self, sku):
         raise NotImplementedError
 
 
@@ -16,16 +30,12 @@ class AbstractRepository(abc.ABC):
 class SqlAlchemyRepository(AbstractRepository):
 
     def __init__(self, session):
+        super().__init__()
         self.session = session
-        self.seen = set()
 
-    def add(self, product):
-        self.seen.add(product)
+    def _add(self, product):
         self.session.add(product)
 
-    def get(self, sku):
-        p = self.session.query(model.Product).filter_by(sku=sku).first()
-        if p:
-            self.seen.add(p)
-        return p
+    def _get(self, sku):
+        return self.session.query(model.Product).filter_by(sku=sku).first()
 

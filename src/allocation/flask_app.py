@@ -27,7 +27,7 @@ def allocate_endpoint():
             request.json['qty'],
             unit_of_work.SqlAlchemyUnitOfWork(),
         )
-    except (exceptions.OutOfStock, exceptions.InvalidSku) as e:
+    except exceptions.InvalidSku as e:
         return jsonify({'message': str(e)}), 400
 
     return jsonify({'batchref': batchref}), 201

@@ -24,7 +24,6 @@ class Product:
             return batch.reference
         except StopIteration:
             self.events.append(events.OutOfStock(line.sku))
-            # raise OutOfStock(f"Out of stock for sku {line.sku}")
             return None
 
 

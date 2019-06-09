@@ -70,8 +70,7 @@ def test_sends_email_on_out_of_stock_error():
     services.add_batch("b1", "POPULAR-CURTAINS", 9, None, uow)
 
     with mock.patch("allocation.email.send_mail") as mock_send_mail:
-        with pytest.raises(exceptions.OutOfStock):
-            services.allocate("o1", "POPULAR-CURTAINS", 10, uow)
+        services.allocate("o1", "POPULAR-CURTAINS", 10, uow)
         assert mock_send_mail.call_args == mock.call(
             "stock@made.com",
             f"Out of stock for POPULAR-CURTAINS",

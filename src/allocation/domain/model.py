@@ -5,10 +5,6 @@ from typing import Optional, List, Set
 from . import events
 
 
-class OutOfStock(Exception):
-    pass
-
-
 class Product:
     def __init__(self, sku: str, batches: List[Batch], version_number: int = 0):
         self.sku = sku

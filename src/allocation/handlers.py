@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import Optional
 from datetime import date
 
-from allocation import events, email, exceptions, model, redis_pubsub
+from allocation import commands, events, email, exceptions, model, redis_pubsub
 from allocation.model import OrderLine
 
 
 def add_batch(
-        event: events.BatchCreated, uow: unit_of_work.AbstractUnitOfWork
+        event: commands.CreateBatch, uow: unit_of_work.AbstractUnitOfWork
 ):
     with uow:
         product = uow.products.get(sku=event.sku)
@@ -21,7 +21,7 @@ def add_batch(
 
 
 def allocate(
-        event: events.AllocationRequest, uow: unit_of_work.AbstractUnitOfWork
+        event: commands.Allocate, uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
     line = OrderLine(event.orderid, event.sku, event.qty)
     with uow:
@@ -34,7 +34,7 @@ def allocate(
 
 
 def change_batch_quantity(
-        event: events.BatchQuantityChanged, uow: unit_of_work.AbstractUnitOfWork
+        event: commands.ChangeBatchQuantity, uow: unit_of_work.AbstractUnitOfWork
 ):
     with uow:
         product = uow.products.get_by_batchref(batchref=event.ref)

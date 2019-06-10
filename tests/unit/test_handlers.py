@@ -67,8 +67,7 @@ class TestAllocate:
     def test_allocates():
         uow = FakeUnitOfWork()
         messagebus.handle(commands.CreateBatch("b1", "COMPLICATED-LAMP", 100, None), uow)
-        result = messagebus.handle(commands.Allocate("o1", "COMPLICATED-LAMP", 10), uow)
-        assert result == "b1"
+        messagebus.handle(commands.Allocate("o1", "COMPLICATED-LAMP", 10), uow)
         [batch] = uow.products.get("COMPLICATED-LAMP").batches
         assert batch.available_quantity == 90
 

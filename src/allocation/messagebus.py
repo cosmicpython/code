@@ -1,3 +1,4 @@
+# pylint: disable=bare-except
 from __future__ import annotations
 import traceback
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
@@ -39,7 +40,10 @@ def handle_command(command, uow: unit_of_work.AbstractUnitOfWork):
 
 
 EVENT_HANDLERS = {
-    events.Allocated: [handlers.publish_allocated_event],
+    events.Allocated: [
+        handlers.publish_allocated_event,
+        handlers.add_allocation_to_read_model
+    ],
     events.OutOfStock: [handlers.send_out_of_stock_notification],
 }  # type: Dict[Type[events.Event], List[Callable]]
 

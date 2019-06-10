@@ -14,6 +14,7 @@ from tenacity import retry, stop_after_delay
 from allocation.adapters.orm import metadata, start_mappers
 from allocation import config
 
+pytest.register_assert_rewrite('tests.e2e.api_client')
 
 @pytest.fixture
 def in_memory_db():

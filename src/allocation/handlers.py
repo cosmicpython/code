@@ -1,9 +1,10 @@
 from __future__ import annotations
-from typing import Optional
-from datetime import date
-
+from typing import TYPE_CHECKING
 from allocation import commands, events, email, exceptions, model, redis_pubsub
 from allocation.model import OrderLine
+
+if TYPE_CHECKING:
+    from allocation import unit_of_work
 
 
 def add_batch(
@@ -22,15 +23,14 @@ def add_batch(
 
 def allocate(
         event: commands.Allocate, uow: unit_of_work.AbstractUnitOfWork
-) -> str:
+):
     line = OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
             raise exceptions.InvalidSku(f'Invalid sku {line.sku}')
-        batchref = product.allocate(line)
+        product.allocate(line)
         uow.commit()
-        return batchref
 
 
 def change_batch_quantity(

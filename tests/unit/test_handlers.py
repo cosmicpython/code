@@ -1,7 +1,7 @@
 from datetime import date
 from unittest import mock
 import pytest
-from allocation import commands, events, exceptions, messagebus, repository, unit_of_work
+from allocation import commands, exceptions, messagebus, repository, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):

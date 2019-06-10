@@ -67,3 +67,14 @@ def add_allocation_to_read_model(
             dict(orderid=event.orderid, sku=event.sku, batchref=event.batchref)
         )
         uow.commit()
+
+def remove_allocation_from_read_model(
+        event: events.Deallocated, uow: unit_of_work.SqlAlchemyUnitOfWork,
+):
+    with uow:
+        uow.session.execute(
+            'DELETE FROM allocations_view '
+            ' WHERE orderid = :orderid AND sku = :sku',
+            dict(orderid=event.orderid, sku=event.sku)
+        )
+        uow.commit()

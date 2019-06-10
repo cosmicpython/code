@@ -18,14 +18,12 @@ def post_to_add_batch(ref, sku, qty, eta):
     )
     assert r.status_code == 201
 
-
 def post_to_allocate(orderid, sku, qty, expected_batch):
     url = config.get_api_url()
     r = requests.post(f'{url}/allocate', json={
         'orderid': orderid, 'sku': sku, 'qty': qty,
     })
-    assert r.status_code == 201
-    assert r.json()['batchref'] == expected_batch
+    assert r.status_code == 202
 
 
 def wait_for(fn):
@@ -86,4 +84,3 @@ def test_change_batch_quantity_leading_to_reallocation():
         assert data['batchref'] == batch2
 
     wait_for_assertion(check_messages)
-

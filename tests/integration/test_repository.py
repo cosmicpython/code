@@ -2,8 +2,8 @@ from allocation.adapters import repository
 from allocation.domain import model
 
 
-def test_get_by_batchref(session):
-    repo = repository.SqlAlchemyRepository(session)
+def test_get_by_batchref(sqlite_session):
+    repo = repository.SqlAlchemyRepository(sqlite_session)
     b1 = model.Batch(ref="b1", sku="sku1", qty=100, eta=None)
     b2 = model.Batch(ref="b2", sku="sku1", qty=100, eta=None)
     b3 = model.Batch(ref="b3", sku="sku2", qty=100, eta=None)

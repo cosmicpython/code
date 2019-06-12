@@ -24,14 +24,14 @@ def in_memory_db():
     return engine
 
 @pytest.fixture
-def session_factory(in_memory_db):
+def sqlite_session_factory(in_memory_db):
     start_mappers()
     yield sessionmaker(bind=in_memory_db)
     clear_mappers()
 
 @pytest.fixture
-def session(session_factory):
-    return session_factory()
+def sqlite_session(sqlite_session_factory):
+    return sqlite_session_factory()
 
 
 def wait_for_postgres_to_come_up(engine):

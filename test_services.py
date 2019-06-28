@@ -51,3 +51,22 @@ def test_commits():
 
     services.allocate(line, repo, session)
     assert session.committed is True
+
+
+def test_deallocate_decrements_available_quantity():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "BLUE-PLINTH", 100, None, repo, session)
+    services.allocate("o1", "BLUE-PLINTH", 10, repo, session)
+    batch = repo.get(reference="b1")
+    assert batch.available_quantity == 90
+    # services.deallocate(...
+    ...
+    assert batch.available_quantity == 100
+
+
+def test_deallocate_decrements_correct_quantity():
+    ...  #  TODO
+
+
+def test_trying_to_deallocate_unallocated_batch():
+    ...  #  TODO: should this error or pass silently? up to you.

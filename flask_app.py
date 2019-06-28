@@ -19,7 +19,9 @@ def allocate_endpoint():
     session = get_session()
     repo = repository.SqlAlchemyRepository(session)
     line = model.OrderLine(
-        request.json["orderid"], request.json["sku"], request.json["qty"],
+        request.json["orderid"],
+        request.json["sku"],
+        request.json["qty"],
     )
 
     try:

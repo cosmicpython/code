@@ -18,6 +18,15 @@ def allocate(line: OrderLine, batches: List[Batch]) -> str:
     except StopIteration:
         raise OutOfStock(f'Out of stock for sku {line.sku}')
 
+class Product:
+    ''' dummy implementation, fixme'''
+
+    def __init__(self, *args, **kwargs):
+        self.batches = kwargs.get('batches')
+
+    def allocate(self, line):
+        return allocate(line,  self.batches)
+
 
 @dataclass(unsafe_hash=True)
 class OrderLine:

@@ -65,3 +65,34 @@ def test_repository_can_retrieve_a_batch_with_allocations(session):
     assert retrieved._allocations == {
         model.OrderLine("order1", "GENERIC-SOFA", 12),
     }
+
+
+def get_allocations(session, batchid):
+    rows = list(
+        session.execute(
+            "SELECT orderid"
+            " FROM allocations"
+            " JOIN order_lines ON allocations.orderline_id = order_lines.id"
+            " JOIN batches ON allocations.batch_id = batches.id"
+            " WHERE batches.reference = :batchid",
+            dict(batchid=batchid),
+        )
+    )
+    return {row[0] for row in rows}
+
+
+def test_updating_a_batch(session):
+    order1 = model.OrderLine("order1", "WEATHERED-BENCH", 10)
+    order2 = model.OrderLine("order2", "WEATHERED-BENCH", 20)
+    batch = model.Batch("batch1", "WEATHERED-BENCH", 100, eta=None)
+    batch.allocate(order1)
+
+    repo = repository.SqlAlchemyRepository(session)
+    repo.add(batch)
+    session.commit()
+
+    batch.allocate(order2)
+    repo.add(batch)
+    session.commit()
+
+    assert get_allocations(session, "batch1") == {"order1", "order2"}

@@ -1,12 +1,13 @@
+from __future__ import annotations
 from typing import List, Dict, Callable, Type
 from allocation import email, events, services, redis_pubsub
 
 
-def handle(events_: List[events.Event]):
+def handle(events_: List[events.Event], uow: unit_of_work.AbstractUnitOfWork):
     while events_:
         event = events_.pop(0)
         for handler in HANDLERS[type(event)]:
-            handler(event)
+            handler(event, uow=uow)
 
 
 def send_out_of_stock_notification(

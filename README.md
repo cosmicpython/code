@@ -19,6 +19,8 @@ https://github.com/python-leap/code/tree/chapter_03_service_layer_exercise
 ## Requirements
 
 * docker with docker-compose
+* for the `watch-tests` recipe of the Makefile, we need to install the `entr` 
+package from https://github.com/clibs/entr
 * for chapters 1 and 2, and optionally for the rest: a local python3.7 virtualenv
 
 

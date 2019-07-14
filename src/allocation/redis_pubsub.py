@@ -4,7 +4,7 @@ from dataclasses import asdict
 import redis
 
 from allocation import (
-    config, commands, email, events, messagebus, orm, unit_of_work,
+    config, commands, events, messagebus, notifications, orm, unit_of_work,
 )
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ def get_bus():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     bus = messagebus.MessageBus(
         uow=uow,
-        notifications=email.send,
+        notifications=notifications.EmailNotifications(),
         publish=publish
     )
     uow.bus = bus

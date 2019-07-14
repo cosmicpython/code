@@ -1,8 +1,8 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
 from allocation import (
-    commands, email, exceptions, messagebus, orm, redis_pubsub, unit_of_work,
-    views,
+    commands, exceptions, messagebus, notifications, orm, redis_pubsub,
+    unit_of_work, views,
 )
 
 app = Flask(__name__)
@@ -10,7 +10,7 @@ orm.start_mappers()
 uow = unit_of_work.SqlAlchemyUnitOfWork()
 bus = messagebus.MessageBus(
     uow=uow,
-    send_mail=email.send,
+    notifications=notifications.EmailNotifications(),
     publish=redis_pubsub.publish
 )
 uow.bus = bus

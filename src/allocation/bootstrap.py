@@ -1,20 +1,26 @@
 import inspect
 from typing import Callable
-from allocation.adapters import email, orm, redis_eventpublisher
+from allocation.adapters import orm, redis_eventpublisher
+from allocation.adapters.notifications import (
+    AbstractNotifications, EmailNotifications
+)
 from allocation.service_layer import handlers, messagebus, unit_of_work
 
 
 def bootstrap(
     start_orm: bool = True,
     uow: unit_of_work.AbstractUnitOfWork = unit_of_work.SqlAlchemyUnitOfWork(),
-    send_mail: Callable = email.send,
+    notifications: AbstractNotifications = None,
     publish: Callable = redis_eventpublisher.publish,
 ) -> messagebus.MessageBus:
+
+    if notifications is None:
+        notifications = EmailNotifications()
 
     if start_orm:
         orm.start_mappers()
 
-    dependencies = {'uow': uow, 'send_mail': send_mail, 'publish': publish}
+    dependencies = {'uow': uow, 'notifications': notifications, 'publish': publish}
     injected_event_handlers = {
         event_type: [
             inject_dependencies(handler, dependencies)

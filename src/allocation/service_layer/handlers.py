@@ -5,11 +5,13 @@ from typing import List, Dict, Callable, Type, TYPE_CHECKING
 from allocation.domain import commands, events, model
 from allocation.domain.model import OrderLine
 if TYPE_CHECKING:
+    from allocation.adapters import notifications
     from . import unit_of_work
 
 
 class InvalidSku(Exception):
     pass
+
 
 
 def add_batch(
@@ -56,9 +58,9 @@ def change_batch_quantity(
 #pylint: disable=unused-argument
 
 def send_out_of_stock_notification(
-        event: events.OutOfStock, send_mail: Callable,
+        event: events.OutOfStock, notifications: notifications.AbstractNotifications,
 ):
-    send_mail(
+    notifications.send(
         'stock@made.com',
         f'Out of stock for {event.sku}',
     )

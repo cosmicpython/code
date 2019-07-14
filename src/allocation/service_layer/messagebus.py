@@ -7,7 +7,8 @@ from allocation.domain import commands, events
 from . import handlers
 
 if TYPE_CHECKING:
-    from allocation.service_layer import unit_of_work
+    from . import unit_of_work
+    from allocation.adapters import notifications
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +21,11 @@ class MessageBus:
     def __init__(
             self,
             uow: unit_of_work.AbstractUnitOfWork,
-            send_mail: Callable,
+            notifications: notifications.AbstractNotifications,
             publish: Callable,
     ):
         self.uow = uow
-        self.dependencies = dict(uow=uow, send_mail=send_mail, publish=publish)
+        self.dependencies = dict(uow=uow, notifications=notifications, publish=publish)
 
 
     def handle(self, message: Message):

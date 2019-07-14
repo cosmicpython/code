@@ -4,7 +4,7 @@ import redis
 
 from allocation import config
 from allocation.domain import commands
-from allocation.adapters import email, orm, redis_eventpublisher
+from allocation.adapters import notifications, orm, redis_eventpublisher
 from allocation.service_layer import messagebus, unit_of_work
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ def get_bus():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     bus = messagebus.MessageBus(
         uow=uow,
-        send_mail=email.send,
+        notifications=notifications.EmailNotifications(),
         publish=redis_eventpublisher.publish
     )
     uow.bus = bus

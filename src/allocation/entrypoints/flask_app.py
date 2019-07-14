@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 
 from allocation.domain import commands
-from allocation.adapters import orm, email, redis_eventpublisher
+from allocation.adapters import notifications, orm, redis_eventpublisher
 from allocation.service_layer import messagebus, unit_of_work
 from allocation.service_layer.handlers import InvalidSku
 from allocation import views
@@ -12,7 +12,7 @@ orm.start_mappers()
 uow = unit_of_work.SqlAlchemyUnitOfWork()
 bus = messagebus.MessageBus(
     uow=uow,
-    send_mail=email.send,
+    notifications=notifications.EmailNotifications(),
     publish=redis_eventpublisher.publish
 )
 uow.bus = bus

@@ -6,6 +6,7 @@ from allocation.domain import commands, events, model
 from allocation.domain.model import OrderLine
 
 if TYPE_CHECKING:
+    from allocation.adapters import notifications
     from . import unit_of_work
 
 
@@ -61,9 +62,9 @@ def change_batch_quantity(
 
 def send_out_of_stock_notification(
     event: events.OutOfStock,
-    send_mail: Callable,
+    notifications: notifications.AbstractNotifications,
 ):
-    send_mail(
+    notifications.send(
         "stock@made.com",
         f"Out of stock for {event.sku}",
     )

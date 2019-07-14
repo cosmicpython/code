@@ -12,10 +12,10 @@ class Notifications(abc.ABC):
 
 class EmailNotifications(Notifications):
 
-    def __init__(self, smtp_host):
-        self.server = smtplib.SMTP(smtp_host)
+    def __init__(self, smtp_host, port):
+        self.server = smtplib.SMTP(smtp_host, port=port)
         self.server.noop()
 
     def send(self, destination, message):
-        msg = 'Subject: allocation service notification\n{message}'
+        msg = f'Subject: allocation service notification\n{message}'
         self.server.sendmail('allocations@example.com', to_addrs=[destination], msg=msg)

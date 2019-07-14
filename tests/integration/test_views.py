@@ -10,7 +10,7 @@ def sqlite_bus(sqlite_session_factory):
     uow = unit_of_work.SqlAlchemyUnitOfWork(sqlite_session_factory)
     bus = messagebus.MessageBus(
         uow=uow,
-        send_mail=mock.Mock(),
+        notifications=mock.Mock(),
         publish=mock.Mock(),
     )
     uow.bus = bus

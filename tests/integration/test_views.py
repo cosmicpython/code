@@ -9,7 +9,7 @@ from allocation import commands, messagebus, unit_of_work, views
 def sqlite_bus(sqlite_session_factory):
     return messagebus.MessageBus(
         uow=unit_of_work.SqlAlchemyUnitOfWork(sqlite_session_factory),
-        send_mail=mock.Mock(),
+        notifications=mock.Mock(),
         publish=mock.Mock(),
     )
 

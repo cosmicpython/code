@@ -6,7 +6,7 @@ from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
 from allocation import commands, events, handlers
 
 if TYPE_CHECKING:
-    from allocation import unit_of_work
+    from allocation import notifications, unit_of_work
 
 Message = Union[commands.Command, events.Event]
 
@@ -16,11 +16,11 @@ class MessageBus:
     def __init__(
             self,
             uow: unit_of_work.AbstractUnitOfWork,
-            send_mail: Callable,
+            notifications: notifications.AbstractNotifications,
             publish: Callable,
     ):
         self.uow = uow
-        self.dependencies = dict(uow=uow, send_mail=send_mail, publish=publish)
+        self.dependencies = dict(uow=uow, notifications=notifications, publish=publish)
 
     def handle(self, message_queue: List[Message]):
         while message_queue:

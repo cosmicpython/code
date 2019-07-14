@@ -4,7 +4,7 @@ from typing import Callable, TYPE_CHECKING
 from allocation import commands, events, exceptions, model
 
 if TYPE_CHECKING:
-    from allocation import unit_of_work
+    from allocation import notifications, unit_of_work
 
 
 def add_batch(
@@ -43,9 +43,9 @@ def change_batch_quantity(
 
 
 def send_out_of_stock_notification(
-        event: events.OutOfStock, send_mail: Callable,
+        event: events.OutOfStock, notifications: notifications.AbstractNotifications,
 ):
-    send_mail(
+    notifications.send(
         'stock@made.com',
         f'Out of stock for {event.sku}',
     )

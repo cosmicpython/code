@@ -26,6 +26,7 @@ class MessageBus:
         self.uow = uow
         self.dependencies = dict(uow=uow, send_mail=send_mail, publish=publish)
 
+
     def handle(self, message: Message):
         if isinstance(message, events.Event):
             self.handle_event(message)
@@ -44,6 +45,7 @@ class MessageBus:
                 logger.exception('Exception handling event %s', event)
                 continue
 
+
     def handle_command(self, command: commands.Command):
         logger.debug('handling command %s', command)
         try:
@@ -52,6 +54,15 @@ class MessageBus:
         except Exception:
             logger.exception('Exception handling command %s', command)
             raise
+
+
+    def call_handler_with_dependencies(self, handler: Callable, message: Message):
+        params = inspect.signature(handler).parameters
+        deps = {
+            name: dependency for name, dependency in self.dependencies.items()
+            if name in params
+        }
+        handler(message, **deps)
 
 
 EVENT_HANDLERS = {

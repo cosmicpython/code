@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-from allocation import commands, events, email, exceptions, model, redis_pubsub
-from allocation.model import OrderLine
+from typing import Callable, TYPE_CHECKING
+
+from allocation import commands, events, exceptions, model
 
 if TYPE_CHECKING:
     from allocation import unit_of_work
@@ -24,7 +24,7 @@ def add_batch(
 def allocate(
         event: commands.Allocate, uow: unit_of_work.AbstractUnitOfWork
 ):
-    line = OrderLine(event.orderid, event.sku, event.qty)
+    line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
@@ -43,18 +43,18 @@ def change_batch_quantity(
 
 
 def send_out_of_stock_notification(
-        event: events.OutOfStock, uow: unit_of_work.AbstractUnitOfWork,
+        event: events.OutOfStock, send_mail: Callable,
 ):
-    email.send(
+    send_mail(
         'stock@made.com',
         f'Out of stock for {event.sku}',
     )
 
 
 def publish_allocated_event(
-        event: events.Allocated, uow: unit_of_work.AbstractUnitOfWork,
+        event: events.Allocated, publish: Callable,
 ):
-    redis_pubsub.publish('line_allocated', event)
+    publish('line_allocated', event)
 
 
 def add_allocation_to_read_model(

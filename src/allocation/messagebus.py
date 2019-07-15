@@ -34,15 +34,24 @@ class MessageBus:
                 raise Exception(f'{m} was not an Event or Command')
             message_queue.extend(self.uow.collect_events())
 
-def handle_event(event: events.Event, uow: unit_of_work.AbstractUnitOfWork):
-    for handler in EVENT_HANDLERS[type(event)]:
-        try:
-            print('handling event', event, 'with handler', handler, flush=True)
-            handler(event, uow=uow)
-        except:
-            print(f'Exception handling event {event}\n:{traceback.format_exc()}')
-            continue
 
+    def handle_event(self, event: events.Event):
+        for handler in EVENT_HANDLERS[type(event)]:
+            try:
+                print('handling event', event, 'with handler', handler, flush=True)
+                self.call_handler_with_dependencies(handler, event)
+            except:
+                print(f'Exception handling event {event}\n:{traceback.format_exc()}')
+                continue
+
+    def handle_command(self, command: commands.Command):
+        print('handling command', command, flush=True)
+        try:
+            handler = COMMAND_HANDLERS[type(command)]
+            return self.call_handler_with_dependencies(handler, command)
+        except Exception as e:
+            print(f'Exception handling command {command}: {e}')
+            raise e
 
 def handle_command(command, uow: unit_of_work.AbstractUnitOfWork):
     print('handling command', command, flush=True)

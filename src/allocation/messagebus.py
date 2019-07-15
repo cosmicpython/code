@@ -45,19 +45,18 @@ class MessageBus:
         print('handling command', command, flush=True)
         try:
             handler = COMMAND_HANDLERS[type(command)]
-            return self.call_handler_with_dependencies(handler, command)
+            self.call_handler_with_dependencies(handler, command)
         except Exception as e:
             print(f'Exception handling command {command}: {e}')
             raise e
 
-def handle_command(command, uow: unit_of_work.AbstractUnitOfWork):
-    print('handling command', command, flush=True)
-    try:
-        handler = COMMAND_HANDLERS[type(command)]
-        handler(command, uow=uow)
-    except Exception as e:
-        print(f'Exception handling command {command}: {e}')
-        raise e
+    def call_handler_with_dependencies(self, handler: Callable, message: Message):
+        params = inspect.signature(handler).parameters
+        deps = {
+            name: dependency for name, dependency in self.dependencies.items()
+            if name in params
+        }
+        handler(message, **deps)
 
 
 EVENT_HANDLERS = {

@@ -1,8 +1,8 @@
 #pylint: disable=unused-argument
 from __future__ import annotations
 from dataclasses import asdict
-from typing import TYPE_CHECKING
-from allocation import commands, events, email, exceptions, model, redis_pubsub
+from typing import Callable, TYPE_CHECKING
+from allocation import commands, events, exceptions, model
 from allocation.model import OrderLine
 if TYPE_CHECKING:
     from allocation import unit_of_work
@@ -33,6 +33,7 @@ def allocate(
         product.allocate(line)
         uow.commit()
 
+
 def reallocate(
         event: events.Deallocated, uow: unit_of_work.AbstractUnitOfWork
 ):
@@ -40,6 +41,7 @@ def reallocate(
         product = uow.products.get(sku=event.sku)
         product.events.append(commands.Allocate(**asdict(event)))
         uow.commit()
+
 
 def change_batch_quantity(
         cmd: commands.ChangeBatchQuantity, uow: unit_of_work.AbstractUnitOfWork
@@ -53,18 +55,18 @@ def change_batch_quantity(
 #pylint: disable=unused-argument
 
 def send_out_of_stock_notification(
-        event: events.OutOfStock, uow: unit_of_work.AbstractUnitOfWork,
+        event: events.OutOfStock, send_mail: Callable,
 ):
-    email.send(
+    send_mail(
         'stock@made.com',
         f'Out of stock for {event.sku}',
     )
 
 
 def publish_allocated_event(
-        event: events.Allocated, uow: unit_of_work.AbstractUnitOfWork,
+        event: events.Allocated, publish: Callable,
 ):
-    redis_pubsub.publish('line_allocated', event)
+    publish('line_allocated', event)
 
 
 def add_allocation_to_read_model(
@@ -77,6 +79,7 @@ def add_allocation_to_read_model(
             dict(orderid=event.orderid, sku=event.sku, batchref=event.batchref)
         )
         uow.commit()
+
 
 def remove_allocation_from_read_model(
         event: events.Deallocated, uow: unit_of_work.SqlAlchemyUnitOfWork,

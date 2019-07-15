@@ -2,13 +2,21 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 
 from allocation.domain import commands
-from allocation.adapters import orm
+from allocation.adapters import orm, email, redis_eventpublisher
 from allocation.service_layer import messagebus, unit_of_work
 from allocation.service_layer.handlers import InvalidSku
 from allocation import views
 
 app = Flask(__name__)
 orm.start_mappers()
+uow = unit_of_work.SqlAlchemyUnitOfWork()
+bus = messagebus.MessageBus(
+    uow=uow,
+    send_mail=email.send,
+    publish=redis_eventpublisher.publish
+)
+uow.bus = bus
+
 
 
 @app.route("/add_batch", methods=['POST'])
@@ -19,8 +27,7 @@ def add_batch():
     cmd = commands.CreateBatch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
     )
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
-    messagebus.handle(cmd, uow)
+    bus.handle(cmd)
     return 'OK', 201
 
 
@@ -30,8 +37,7 @@ def allocate_endpoint():
         cmd = commands.Allocate(
             request.json['orderid'], request.json['sku'], request.json['qty'],
         )
-        uow = unit_of_work.SqlAlchemyUnitOfWork()
-        messagebus.handle(cmd, uow)
+        bus.handle(cmd)
     except InvalidSku as e:
         return jsonify({'message': str(e)}), 400
 
@@ -40,8 +46,7 @@ def allocate_endpoint():
 
 @app.route("/allocations/<orderid>", methods=['GET'])
 def allocations_view_endpoint(orderid):
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
-    result = views.allocations(orderid, uow)
+    result = views.allocations(orderid, bus.uow)
     if not result:
         return 'not found', 404
     return jsonify(result), 200

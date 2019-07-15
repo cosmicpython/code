@@ -1,4 +1,4 @@
-# pylint: disable=broad-except
+# pylint: disable=broad-except, too-many-arguments
 import threading
 import time
 import traceback
@@ -75,15 +75,15 @@ def test_rolls_back_on_error(sqlite_session_factory):
     assert rows == []
 
 
-def try_to_allocate(orderid, sku, exceptions):
+def try_to_allocate(orderid, sku, exceptions, session_factory):
     line = model.OrderLine(orderid, sku, 10)
     try:
-        with unit_of_work.SqlAlchemyUnitOfWork() as uow:
+        with unit_of_work.SqlAlchemyUnitOfWork(session_factory) as uow:
             product = uow.products.get(sku=sku)
             product.allocate(line)
             time.sleep(0.2)
             uow.commit()
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-except
         print(traceback.format_exc())
         exceptions.append(e)
 
@@ -96,8 +96,12 @@ def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory)
 
     order1, order2 = random_orderid(1), random_orderid(2)
     exceptions = []  # type: List[Exception]
-    try_to_allocate_order1 = lambda: try_to_allocate(order1, sku, exceptions)
-    try_to_allocate_order2 = lambda: try_to_allocate(order2, sku, exceptions)
+    try_to_allocate_order1 = lambda: try_to_allocate(
+        order1, sku, exceptions, postgres_session_factory
+    )
+    try_to_allocate_order2 = lambda: try_to_allocate(
+        order2, sku, exceptions, postgres_session_factory
+    )
     thread1 = threading.Thread(target=try_to_allocate_order1)
     thread2 = threading.Thread(target=try_to_allocate_order2)
     thread1.start()
@@ -121,5 +125,5 @@ def test_concurrent_updates_to_version_are_not_allowed(postgres_session_factory)
         dict(sku=sku),
     ))
     assert len(orders) == 1
-    with unit_of_work.SqlAlchemyUnitOfWork() as uow:
+    with unit_of_work.SqlAlchemyUnitOfWork(postgres_session_factory) as uow:
         uow.session.execute('select 1')

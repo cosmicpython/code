@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 import redis
+from redis.exceptions import RedisError
 import requests
 from requests.exceptions import RequestException
-from redis.exceptions import RedisError
-from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
 from allocation.orm import metadata, start_mappers
@@ -18,20 +18,16 @@ from allocation import config
 
 
 @pytest.fixture
-def in_memory_db():
+def in_memory_sqlite_db():
     engine = create_engine('sqlite:///:memory:')
     metadata.create_all(engine)
     return engine
 
 @pytest.fixture
-def sqlite_session_factory(in_memory_db):
+def sqlite_session_factory(in_memory_sqlite_db):
     start_mappers()
-    yield sessionmaker(bind=in_memory_db)
+    yield sessionmaker(bind=in_memory_sqlite_db)
     clear_mappers()
-
-@pytest.fixture
-def sqlite_session(sqlite_session_factory):
-    return sqlite_session_factory()
 
 
 def wait_for_postgres_to_come_up(engine):

@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 Message = Union[commands.Command, events.Event]
 
 
+
 class MessageBus:
 
     def __init__(
@@ -34,24 +35,23 @@ class MessageBus:
             raise Exception(f'{message} was not an Event or Command')
 
 
-def handle_event(event: events.Event, uow: unit_of_work.AbstractUnitOfWork):
-    for handler in EVENT_HANDLERS[type(event)]:
+    def handle_event(self, event: events.Event):
+        for handler in EVENT_HANDLERS[type(event)]:
+            try:
+                logger.debug('handling event %s with handler %s', event, handler)
+                self.call_handler_with_dependencies(handler, event)
+            except:
+                logger.exception('Exception handling event %s', event)
+                continue
+
+    def handle_command(self, command: commands.Command):
+        logger.debug('handling command %s', command)
         try:
-            logger.debug('handling event %s with handler %s', event, handler)
-            handler(event, uow=uow)
-        except:
-            logger.exception('Exception handling event %s', event)
-            continue
-
-
-def handle_command(command, uow: unit_of_work.AbstractUnitOfWork):
-    logger.debug('handling command %s', command)
-    try:
-        handler = COMMAND_HANDLERS[type(command)]
-        handler(command, uow=uow)
-    except Exception:
-        logger.exception('Exception handling command %s', command)
-        raise
+            handler = COMMAND_HANDLERS[type(command)]
+            self.call_handler_with_dependencies(handler, command)
+        except Exception:
+            logger.exception('Exception handling command %s', command)
+            raise
 
 
 EVENT_HANDLERS = {

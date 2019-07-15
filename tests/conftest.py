@@ -17,20 +17,16 @@ from allocation import config
 pytest.register_assert_rewrite('tests.e2e.api_client')
 
 @pytest.fixture
-def in_memory_db():
+def in_memory_sqlite_db():
     engine = create_engine('sqlite:///:memory:')
     metadata.create_all(engine)
     return engine
 
 @pytest.fixture
-def sqlite_session_factory(in_memory_db):
+def sqlite_session_factory(in_memory_sqlite_db):
     start_mappers()
-    yield sessionmaker(bind=in_memory_db)
+    yield sessionmaker(bind=in_memory_sqlite_db)
     clear_mappers()
-
-@pytest.fixture
-def sqlite_session(sqlite_session_factory):
-    return sqlite_session_factory()
 
 
 @retry(stop=stop_after_delay(10))

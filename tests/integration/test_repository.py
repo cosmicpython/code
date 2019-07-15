@@ -1,7 +1,8 @@
 from allocation import model, repository
 
-def test_get_by_batchref(sqlite_session):
-    repo = repository.SqlAlchemyRepository(sqlite_session)
+def test_get_by_batchref(sqlite_session_factory):
+    session = sqlite_session_factory()
+    repo = repository.SqlAlchemyRepository(session)
     b1 = model.Batch(ref='b1', sku='sku1', qty=100, eta=None)
     b2 = model.Batch(ref='b2', sku='sku1', qty=100, eta=None)
     b3 = model.Batch(ref='b3', sku='sku2', qty=100, eta=None)
@@ -11,4 +12,3 @@ def test_get_by_batchref(sqlite_session):
     repo.add(p2)
     assert repo.get_by_batchref('b2') == p1
     assert repo.get_by_batchref('b3') == p2
-

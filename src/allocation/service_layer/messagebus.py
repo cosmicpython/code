@@ -1,6 +1,7 @@
 # pylint: disable=bare-except
 from __future__ import annotations
 import logging
+import inspect
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
 from allocation.domain import commands, events
 from . import handlers
@@ -13,13 +14,24 @@ logger = logging.getLogger(__name__)
 Message = Union[commands.Command, events.Event]
 
 
-def handle(message: Message, uow: unit_of_work.AbstractUnitOfWork):
-    if isinstance(message, events.Event):
-        handle_event(message, uow)
-    elif isinstance(message, commands.Command):
-        handle_command(message, uow)
-    else:
-        raise Exception(f'{message} was not an Event or Command')
+class MessageBus:
+
+    def __init__(
+            self,
+            uow: unit_of_work.AbstractUnitOfWork,
+            send_mail: Callable,
+            publish: Callable,
+    ):
+        self.uow = uow
+        self.dependencies = dict(uow=uow, send_mail=send_mail, publish=publish)
+
+    def handle(self, message: Message):
+        if isinstance(message, events.Event):
+            self.handle_event(message)
+        elif isinstance(message, commands.Command):
+            self.handle_command(message)
+        else:
+            raise Exception(f'{message} was not an Event or Command')
 
 
 def handle_event(event: events.Event, uow: unit_of_work.AbstractUnitOfWork):

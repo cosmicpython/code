@@ -1,8 +1,7 @@
 # pylint: disable=unused-argument
 from __future__ import annotations
 from dataclasses import asdict
-from typing import TYPE_CHECKING
-from allocation.adapters import email, redis_eventpublisher
+from typing import Callable, TYPE_CHECKING
 from allocation.domain import commands, events, model
 from allocation.domain.model import OrderLine
 
@@ -65,9 +64,9 @@ def change_batch_quantity(
 
 def send_out_of_stock_notification(
     event: events.OutOfStock,
-    uow: unit_of_work.AbstractUnitOfWork,
+    send_mail: Callable,
 ):
-    email.send(
+    send_mail(
         "stock@made.com",
         f"Out of stock for {event.sku}",
     )
@@ -75,9 +74,9 @@ def send_out_of_stock_notification(
 
 def publish_allocated_event(
     event: events.Allocated,
-    uow: unit_of_work.AbstractUnitOfWork,
+    publish: Callable,
 ):
-    redis_eventpublisher.publish("line_allocated", event)
+    publish("line_allocated", event)
 
 
 def add_allocation_to_read_model(

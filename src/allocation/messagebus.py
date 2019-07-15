@@ -1,4 +1,6 @@
+# pylint: disable=bare-except
 from __future__ import annotations
+import inspect
 import traceback
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
 from allocation import commands, events, handlers
@@ -9,16 +11,28 @@ if TYPE_CHECKING:
 Message = Union[commands.Command, events.Event]
 
 
-def handle(message_queue: List[Message], uow: unit_of_work.AbstractUnitOfWork):
-    while message_queue:
-        m = message_queue.pop(0)
-        if isinstance(m, events.Event):
-            handle_event(m, uow)
-        elif isinstance(m, commands.Command):
-            handle_command(m, uow)
-        else:
-            raise Exception(f'{m} was not an Event or Command')
+class MessageBus:
 
+    def __init__(
+            self,
+            uow: unit_of_work.AbstractUnitOfWork,
+            send_mail: Callable,
+            publish: Callable,
+    ):
+        self.uow = uow
+        self.dependencies = dict(uow=uow, send_mail=send_mail, publish=publish)
+
+    def handle(self, message_queue: List[Message]):
+        while message_queue:
+            m = message_queue.pop(0)
+            print('handling message', m, flush=True)
+            if isinstance(m, events.Event):
+                self.handle_event(m)
+            elif isinstance(m, commands.Command):
+                self.handle_command(m)
+            else:
+                raise Exception(f'{m} was not an Event or Command')
+            message_queue.extend(self.uow.collect_events())
 
 def handle_event(event: events.Event, uow: unit_of_work.AbstractUnitOfWork):
     for handler in EVENT_HANDLERS[type(event)]:

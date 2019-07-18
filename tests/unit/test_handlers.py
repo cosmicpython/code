@@ -55,6 +55,12 @@ class TestAddBatch:
 
 
 
+@pytest.fixture(autouse=True)
+def fake_redis_publish():
+    with mock.patch("allocation.redis_pubsub.publish"):
+        yield
+
+
 class TestAllocate:
 
     @staticmethod

@@ -45,8 +45,8 @@ def test_error_for_invalid_sku():
 
 
 def test_commits():
-    line = model.OrderLine('o1', 'sku1', 10)
-    batch = model.Batch('b1', 'sku1', 100, eta=None)
+    line = model.OrderLine('o1', 'OMINOUS-MIRROR', 10)
+    batch = model.Batch('b1', 'OMINOUS-MIRROR', 100, eta=None)
     repo = FakeRepository([batch])
     session = FakeSession()
 

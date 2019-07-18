@@ -48,6 +48,14 @@ class TestAddBatch:
         assert "b2" in [b.reference for b in uow.products.get("GARISH-RUG").batches]
 
 
+
+@pytest.fixture(autouse=True)
+def fake_redis_publish():
+    with mock.patch("allocation.redis_pubsub.publish"):
+        yield
+
+
+
 class TestAllocate:
 
     @staticmethod

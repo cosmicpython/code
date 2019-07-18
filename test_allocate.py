@@ -7,7 +7,7 @@ later = tomorrow + timedelta(days=10)
 
 
 def test_prefers_current_stock_batches_to_shipments():
-    in_stock_batch = Batch("in-warehouse-stock", "RETRO-CLOCK", 100, eta=None)
+    in_stock_batch = Batch("in-stock-batch", "RETRO-CLOCK", 100, eta=None)
     shipment_batch = Batch("shipment-batch", "RETRO-CLOCK", 100, eta=tomorrow)
     line = OrderLine("oref", "RETRO-CLOCK", 10)
 

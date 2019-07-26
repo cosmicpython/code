@@ -1,24 +1,50 @@
 version: "3"
+
 services:
 
-  app:
+  redis_pubsub:
     build:
       context: .
       dockerfile: Dockerfile
+    image: allocation-image
     depends_on:
       - postgres
       - redis
     environment:
       - DB_HOST=postgres
       - DB_PASSWORD=abc123
-      - API_HOST=app
+      - REDIS_HOST=redis
       - PYTHONDONTWRITEBYTECODE=1
     volumes:
       - ./src:/src
       - ./tests:/tests
+    entrypoint:
+      - python
+      - /src/allocation/entrypoints/redis_eventconsumer.py
+
+  api:
+    image: allocation-image
+    depends_on:
+      - redis_pubsub
+    environment:
+      - DB_HOST=postgres
+      - DB_PASSWORD=abc123
+      - API_HOST=api
+      - REDIS_HOST=redis
+      - PYTHONDONTWRITEBYTECODE=1
+      - FLASK_APP=allocation/entrypoints/flask_app.py
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./src:/src
+      - ./tests:/tests
+    entrypoint:
+      - flask
+      - run
+      - --host=0.0.0.0
+      - --port=80
     ports:
       - "5005:80"
-
 
   postgres:
     image: postgres:9.6

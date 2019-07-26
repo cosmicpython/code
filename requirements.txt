@@ -2,9 +2,11 @@
 sqlalchemy
 flask
 psycopg2-binary
+redis
 
 # tests
 pytest
 pytest-icdiff
 mypy
 requests
+tenacity

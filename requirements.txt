@@ -9,3 +9,4 @@ pytest-icdiff
 mypy
 requests
 
+redis

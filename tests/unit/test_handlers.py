@@ -60,10 +60,10 @@ class TestAllocate:
         messagebus.handle(
             events.BatchCreated("batch1", "COMPLICATED-LAMP", 100, None), uow
         )
-        result = messagebus.handle(
+        results = messagebus.handle(
             events.AllocationRequired("o1", "COMPLICATED-LAMP", 10), uow
         )
-        assert result == "batch1"
+        assert results.pop(0) == "batch1"
 
 
     def test_errors_for_invalid_sku(self):

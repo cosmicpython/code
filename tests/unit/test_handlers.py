@@ -57,8 +57,8 @@ class TestAllocate:
     def test_returns_allocation():
         uow = FakeUnitOfWork()
         messagebus.handle(events.BatchCreated("b1", "COMPLICATED-LAMP", 100, None), uow)
-        result = messagebus.handle(events.AllocationRequired("o1", "COMPLICATED-LAMP", 10), uow)
-        assert result == "b1"
+        results = messagebus.handle(events.AllocationRequired("o1", "COMPLICATED-LAMP", 10), uow)
+        assert results.pop() == "b1"
 
     @staticmethod
     def test_errors_for_invalid_sku():

@@ -6,8 +6,12 @@ if TYPE_CHECKING:
 
 
 def handle(event: events.Event, uow: unit_of_work.AbstractUnitOfWork):
+    results = []
     for handler in HANDLERS[type(event)]:
-        handler(event, uow=uow)
+        r = handler(event, uow=uow)
+        results.append(r)
+    return results
+
 
 
 HANDLERS = {

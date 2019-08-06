@@ -1,29 +1,30 @@
 from __future__ import annotations
-from typing import Optional
-from datetime import date
-
-from allocation import exceptions, model, unit_of_work
+import typing
+from allocation import events, email, exceptions, model
 from allocation.model import OrderLine
+if typing.TYPE_CHECKING:
+    from allocation import unit_of_work
+
 
 
 def add_batch(
-        ref: str, sku: str, qty: int, eta: Optional[date],
-        uow: unit_of_work.AbstractUnitOfWork
+        event: events.BatchCreated, uow: unit_of_work.AbstractUnitOfWork
 ):
     with uow:
-        product = uow.products.get(sku=sku)
+        product = uow.products.get(sku=event.sku)
         if product is None:
-            product = model.Product(sku, batches=[])
+            product = model.Product(event.sku, batches=[])
             uow.products.add(product)
-        product.batches.append(model.Batch(ref, sku, qty, eta))
+        product.batches.append(model.Batch(
+            event.ref, event.sku, event.qty, event.eta
+        ))
         uow.commit()
 
 
 def allocate(
-        orderid: str, sku: str, qty: int,
-        uow: unit_of_work.AbstractUnitOfWork
+        event: events.AllocationRequired, uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
-    line = OrderLine(orderid, sku, qty)
+    line = OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
@@ -31,3 +32,14 @@ def allocate(
         batchref = product.allocate(line)
         uow.commit()
         return batchref
+
+
+# pylint: disable=unused-argument
+
+def send_out_of_stock_notification(
+        event: events.OutOfStock, uow: unit_of_work.AbstractUnitOfWork,
+):
+    email.send(
+        'stock@made.com',
+        f'Out of stock for {event.sku}',
+    )

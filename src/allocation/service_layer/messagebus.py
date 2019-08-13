@@ -14,18 +14,15 @@ Message = Union[commands.Command, events.Event]
 
 
 def handle(message: Message, uow: unit_of_work.AbstractUnitOfWork):
-    results = []
     queue = [message]
     while queue:
         message = queue.pop(0)
         if isinstance(message, events.Event):
             handle_event(message, queue, uow)
         elif isinstance(message, commands.Command):
-            cmd_result = handle_command(message, queue, uow)
-            results.append(cmd_result)
+            handle_command(message, queue, uow)
         else:
             raise Exception(f'{message} was not an Event or Command')
-    return results
 
 
 def handle_event(
@@ -51,9 +48,8 @@ def handle_command(
     logger.debug('handling command %s', command)
     try:
         handler = COMMAND_HANDLERS[type(command)]
-        result = handler(command, uow=uow)
+        handler(command, uow=uow)
         queue.extend(uow.collect_new_events())
-        return result
     except Exception:
         logger.exception('Exception handling command %s', command)
         raise

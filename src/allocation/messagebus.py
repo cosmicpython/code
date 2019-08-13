@@ -14,7 +14,7 @@ def handle(message: Message, uow: unit_of_work.AbstractUnitOfWork):
     if isinstance(message, events.Event):
         handle_event(message, uow)
     elif isinstance(message, commands.Command):
-        return handle_command(message, uow)
+        handle_command(message, uow)
     else:
         raise Exception(f'{message} was not an Event or Command')
 
@@ -33,7 +33,7 @@ def handle_command(command, uow: unit_of_work.AbstractUnitOfWork):
     print('handling command', command, flush=True)
     try:
         handler = COMMAND_HANDLERS[type(command)]
-        return handler(command, uow=uow)
+        handler(command, uow=uow)
     except Exception as e:
         print(f'Exception handling command {command}: {e}')
         raise e

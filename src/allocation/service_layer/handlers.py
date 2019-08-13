@@ -1,3 +1,4 @@
+#pylint: disable=unused-argument
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from allocation.adapters import email, redis_eventpublisher

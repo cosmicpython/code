@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from allocation import commands, events, email, exceptions, model
+from allocation import commands, events, email, exceptions, model, redis_pubsub
 from allocation.model import OrderLine
 if TYPE_CHECKING:
     from allocation import unit_of_work
@@ -42,6 +42,8 @@ def change_batch_quantity(
         uow.commit()
 
 
+#pylint: disable=unused-argument
+
 def send_out_of_stock_notification(
         event: events.OutOfStock, uow: unit_of_work.AbstractUnitOfWork,
 ):
@@ -49,3 +51,9 @@ def send_out_of_stock_notification(
         'stock@made.com',
         f'Out of stock for {event.sku}',
     )
+
+
+def publish_allocated_event(
+        event: events.Allocated, uow: unit_of_work.AbstractUnitOfWork,
+):
+    redis_pubsub.publish('line_allocated', event)

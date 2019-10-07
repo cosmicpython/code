@@ -1,6 +1,7 @@
 from allocation.adapters import repository
 from allocation.domain import model
 
+
 def test_get_by_batchref(sqlite_session_factory):
     session = sqlite_session_factory()
     repo = repository.SqlAlchemyRepository(session)

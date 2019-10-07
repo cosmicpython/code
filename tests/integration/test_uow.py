@@ -6,6 +6,7 @@ from typing import List
 import pytest
 from allocation import model, unit_of_work
 from ..random_refs import random_sku, random_batchref, random_orderid
+from unittest.mock import Mock
 
 
 def insert_batch(session, ref, sku, qty, eta, product_version=1):
@@ -38,6 +39,7 @@ def test_uow_can_retrieve_a_batch_and_allocate_to_it(sqlite_session_factory):
     session.commit()
 
     uow = unit_of_work.SqlAlchemyUnitOfWork(sqlite_session_factory)
+    uow.bus = Mock()
     with uow:
         product = uow.products.get(sku='HIPSTER-WORKBENCH')
         line = model.OrderLine('o1', 'HIPSTER-WORKBENCH', 10)
@@ -77,11 +79,12 @@ def try_to_allocate(orderid, sku, exceptions, session_factory):
     line = model.OrderLine(orderid, sku, 10)
     try:
         with unit_of_work.SqlAlchemyUnitOfWork(session_factory) as uow:
+            uow.bus = Mock()
             product = uow.products.get(sku=sku)
             product.allocate(line)
             time.sleep(0.2)
             uow.commit()
-    except Exception as e: # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
         print(traceback.format_exc())
         exceptions.append(e)
 

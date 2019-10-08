@@ -23,6 +23,7 @@ def get_bus():
 
 
 def main():
+    logger.info('Redis pubsub starting')
     pubsub = r.pubsub(ignore_subscribe_messages=True)
     pubsub.subscribe('change_batch_quantity')
     bus = get_bus()
@@ -32,14 +33,14 @@ def main():
 
 
 def handle_change_batch_quantity(m, bus: messagebus.MessageBus):
-    logging.debug('handling %s', m)
+    logger.info('handling %s', m)
     data = json.loads(m['data'])
     cmd = commands.ChangeBatchQuantity(ref=data['batchref'], qty=data['qty'])
     bus.handle(cmd)
 
 
 def publish(channel, event: events.Event):
-    logging.debug('publishing: channel=%s, event=%s', channel, event)
+    logger.info('publishing: channel=%s, event=%s', channel, event)
     r.publish(channel, json.dumps(asdict(event)))
 
 

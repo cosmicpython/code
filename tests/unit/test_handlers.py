@@ -1,6 +1,7 @@
 # pylint: disable=no-self-use
 from datetime import date
 from unittest import mock
+from typing import List
 import pytest
 
 from allocation.adapters import repository
@@ -143,3 +144,15 @@ class TestChangeBatchQuantity:
         assert batch1.available_quantity == 5
         # and 20 will be reallocated to the next batch
         assert batch2.available_quantity == 30
+
+
+class FakeUnitOfWorkWithFakeMessageBus(FakeUnitOfWork):
+
+    def __init__(self):
+        super().__init__()
+        self.events_published = []  # type: List[events.Event]
+
+    def publish_events(self):
+        for product in self.products.seen:
+            while product.events:
+                self.events_published.append(product.events.pop(0))

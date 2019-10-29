@@ -1,6 +1,5 @@
 from datetime import date
 from unittest import mock
-from typing import List
 import pytest
 from allocation import events, exceptions, messagebus, repository, unit_of_work
 
@@ -123,36 +122,3 @@ class TestChangeBatchQuantity:
         assert batch1.available_quantity == 5
         # and 20 will be reallocated to the next batch
         assert batch2.available_quantity == 30
-
-
-class FakeUnitOfWorkWithFakeMessageBus(FakeUnitOfWork):
-
-    def __init__(self):
-        super().__init__()
-        self.events_published = []  # type: List[events.Event]
-
-    def publish_events(self):
-        for product in self.products.seen:
-            while product.events:
-                self.events_published.append(product.events.pop(0))
-
-
-def test_reallocates_if_necessary_isolated():
-    uow = FakeUnitOfWorkWithFakeMessageBus()
-
-    # test setup as before
-    messagebus.handle(events.BatchCreated("batch1", "INDIFFERENT-TABLE", 50, None), uow)
-    messagebus.handle(events.BatchCreated("batch2", "INDIFFERENT-TABLE", 50, date.today()), uow)
-    messagebus.handle(events.AllocationRequired("order1", "INDIFFERENT-TABLE", 20), uow)
-    messagebus.handle(events.AllocationRequired("order2", "INDIFFERENT-TABLE", 20), uow)
-    [batch1, batch2] = uow.products.get(sku="INDIFFERENT-TABLE").batches
-    assert batch1.available_quantity == 10
-
-    messagebus.handle(events.BatchQuantityChanged("batch1", 25), uow)
-
-    # assert on new events emitted rather than downstream side-effects
-    [reallocation_event] = uow.events_published
-    assert isinstance(reallocation_event, events.AllocationRequired)
-    assert reallocation_event.orderid in {'order1', 'order2'}
-    assert reallocation_event.sku == 'INDIFFERENT-TABLE'
-

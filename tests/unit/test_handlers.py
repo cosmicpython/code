@@ -156,3 +156,29 @@ class FakeUnitOfWorkWithFakeMessageBus(FakeUnitOfWork):
         for product in self.products.seen:
             while product.events:
                 self.events_published.append(product.events.pop(0))
+
+
+def test_reallocates_if_necessary_isolated():
+    uow = FakeUnitOfWorkWithFakeMessageBus()
+
+    # test setup as before
+    event_history = [
+        events.BatchCreated("batch1", "INDIFFERENT-TABLE", 50, None),
+        events.BatchCreated("batch2", "INDIFFERENT-TABLE", 50, date.today()),
+        events.AllocationRequired("order1", "INDIFFERENT-TABLE", 20),
+        events.AllocationRequired("order2", "INDIFFERENT-TABLE", 20),
+    ]
+    for e in event_history:
+        messagebus.handle(e, uow)
+    [batch1, batch2] = uow.products.get(sku="INDIFFERENT-TABLE").batches
+    assert batch1.available_quantity == 10
+    assert batch2.available_quantity == 50
+
+    messagebus.handle(events.BatchQuantityChanged("batch1", 25), uow)
+
+    # assert on new events emitted rather than downstream side-effects
+    [reallocation_event] = uow.events_published
+    assert isinstance(reallocation_event, events.AllocationRequired)
+    assert reallocation_event.orderid in {'order1', 'order2'}
+    assert reallocation_event.sku == 'INDIFFERENT-TABLE'
+

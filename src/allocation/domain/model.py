@@ -73,6 +73,10 @@ class Batch:
             return True
         return self.eta > other.eta
 
+    @property
+    def orderids(self):
+        return {l.orderid for l in self._allocations}
+
     def allocate(self, line: OrderLine):
         if self.can_allocate(line):
             self._allocations.add(line)

@@ -1,11 +1,10 @@
-from allocation import unit_of_work
+from allocation import unit_of_work, model
 
 def allocations(orderid: str, uow: unit_of_work.SqlAlchemyUnitOfWork):
     with uow:
-        products = uow.products.for_order(orderid=orderid)
-        batches = [b for p in products for b in p.batches]
-        return [
-            {'sku': b.sku, 'batchref': b.reference}
-            for b in batches
-            if orderid in b.orderids
-        ]
+        batches = uow.session.query(model.Batch).join(
+            model.OrderLine, model.Batch._allocations
+        ).filter(
+            model.OrderLine.orderid == orderid
+        )
+        return [{'sku': b.sku, 'batchref': b.reference} for b in batches]

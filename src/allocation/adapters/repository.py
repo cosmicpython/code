@@ -57,3 +57,11 @@ class SqlAlchemyRepository(AbstractRepository):
         return self.session.query(model.Product).join(model.Batch).filter(
             orm.batches.c.reference == batchref,
         ).first()
+
+
+    def for_order(self, orderid):
+        order_lines = self.session.query(model.OrderLine).filter_by(orderid=orderid)
+        skus = {l.sku for l in order_lines}
+        return self.session.query(model.Product).join(model.Batch).filter(
+            model.Batch.sku.in_(skus)
+        )

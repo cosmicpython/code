@@ -7,11 +7,9 @@ from pathlib import Path
 import pytest
 import redis
 import requests
-from requests.exceptions import RequestException
-from redis.exceptions import RedisError
-from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
+from tenacity import retry, stop_after_delay
 
 from allocation.adapters.orm import metadata, start_mappers
 from allocation import config
@@ -34,36 +32,20 @@ def session(session_factory):
     return session_factory()
 
 
+@retry(stop=stop_after_delay(10))
 def wait_for_postgres_to_come_up(engine):
-    deadline = time.time() + 10
-    while time.time() < deadline:
-        try:
-            return engine.connect()
-        except OperationalError:
-            time.sleep(0.5)
-    pytest.fail('Postgres never came up')
+    return engine.connect()
 
 
+@retry(stop=stop_after_delay(10))
 def wait_for_webapp_to_come_up():
-    deadline = time.time() + 10
-    url = config.get_api_url()
-    while time.time() < deadline:
-        try:
-            return requests.get(url)
-        except RequestException:
-            time.sleep(0.5)
-    pytest.fail('API never came up')
+    return requests.get(config.get_api_url())
 
 
+@retry(stop=stop_after_delay(10))
 def wait_for_redis_to_come_up():
-    deadline = time.time() + 5
     r = redis.Redis(**config.get_redis_host_and_port())
-    while time.time() < deadline:
-        try:
-            return r.ping()
-        except RedisError:
-            time.sleep(0.5)
-    pytest.fail('Redis never came up')
+    return r.ping()
 
 
 @pytest.fixture(scope='session')

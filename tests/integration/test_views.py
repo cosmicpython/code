@@ -1,17 +1,5 @@
 from datetime import date
-import pytest
-import redis
-from allocation import config, commands, unit_of_work, messagebus, views
-
-@pytest.fixture
-def cleanup_redis():
-    r = redis.Redis(**config.get_redis_host_and_port())
-    yield
-    for k in r.keys():
-        print('cleaning up redis key', k)
-        r.delete(k)
-
-pytestmark = pytest.mark.usefixtures('cleanup_redis')
+from allocation import commands, unit_of_work, messagebus, views
 
 
 def test_allocations_view(sqlite_session_factory):
@@ -25,7 +13,7 @@ def test_allocations_view(sqlite_session_factory):
     messagebus.handle(commands.Allocate('otherorder', 'sku1', 30), uow)
     messagebus.handle(commands.Allocate('otherorder', 'sku2', 10), uow)
 
-    assert views.allocations('order1') == [
+    assert views.allocations('order1', uow) == [
         {'sku': 'sku1', 'batchref': 'sku1batch'},
         {'sku': 'sku2', 'batchref': 'sku2batch'},
     ]
@@ -38,6 +26,6 @@ def test_deallocation(sqlite_session_factory):
     messagebus.handle(commands.Allocate('o1', 'sku1', 40), uow)
     messagebus.handle(commands.ChangeBatchQuantity('b1', 10), uow)
 
-    assert views.allocations('o1') == [
+    assert views.allocations('o1', uow) == [
         {'sku': 'sku1', 'batchref': 'b2'},
     ]

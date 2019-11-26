@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 from tenacity import retry, stop_after_delay
 
-from allocation.orm import metadata, start_mappers
+from allocation.adapters.orm import metadata, start_mappers
 from allocation import config
 
 
@@ -68,7 +68,7 @@ def postgres_session(postgres_session_factory):
 
 @pytest.fixture
 def restart_api():
-    (Path(__file__).parent / '../src/allocation/flask_app.py').touch()
+    (Path(__file__).parent / '../src/allocation/entrypoints/flask_app.py').touch()
     time.sleep(0.5)
     wait_for_webapp_to_come_up()
 

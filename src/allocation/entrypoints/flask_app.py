@@ -1,6 +1,8 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
-from allocation import commands, exceptions, messagebus, orm, unit_of_work
+from allocation.domain import commands
+from allocation import exceptions, messagebus, unit_of_work
+from allocation.adapters import orm
 
 app = Flask(__name__)
 orm.start_mappers()

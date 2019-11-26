@@ -1,7 +1,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from allocation import commands, events, email, exceptions, model, redis_pubsub
-from allocation.model import OrderLine
+from allocation import exceptions
+from allocation.domain import commands, events, model
+from allocation.adapters import email, redis_pubsub
+
 if TYPE_CHECKING:
     from allocation import unit_of_work
 
@@ -23,7 +25,7 @@ def add_batch(
 def allocate(
         cmd: commands.Allocate, uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
-    line = OrderLine(cmd.orderid, cmd.sku, cmd.qty)
+    line = model.OrderLine(cmd.orderid, cmd.sku, cmd.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:

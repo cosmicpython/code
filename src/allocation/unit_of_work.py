@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from allocation import config, messagebus, repository
+from allocation import config, messagebus
+from allocation.adapters import repository
 
 
 

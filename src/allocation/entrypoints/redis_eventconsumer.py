@@ -1,6 +1,8 @@
 import json
 import logging
-from allocation import commands, messagebus, orm, redis_pubsub, unit_of_work
+from allocation.domain import commands
+from allocation import messagebus, unit_of_work
+from allocation.adapters import orm, redis_pubsub
 
 logger = logging.getLogger(__name__)
 

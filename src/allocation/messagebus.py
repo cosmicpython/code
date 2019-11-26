@@ -1,7 +1,8 @@
 from __future__ import annotations
 import traceback
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
-from allocation import commands, events, handlers
+from allocation.domain import commands, events
+from allocation import handlers
 
 if TYPE_CHECKING:
     from allocation import unit_of_work

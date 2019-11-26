@@ -1,7 +1,9 @@
 from datetime import date
 from unittest import mock
 import pytest
-from allocation import commands, exceptions, messagebus, repository, unit_of_work
+from allocation import exceptions, messagebus, unit_of_work
+from allocation.domain import commands
+from allocation.adapters import repository
 
 
 class FakeRepository(repository.AbstractRepository):
@@ -57,7 +59,7 @@ class TestAddBatch:
 
 @pytest.fixture(autouse=True)
 def fake_redis_publish():
-    with mock.patch("allocation.redis_pubsub.publish"):
+    with mock.patch("allocation.adapters.redis_pubsub.publish"):
         yield
 
 
@@ -92,7 +94,7 @@ class TestAllocate:
         uow = FakeUnitOfWork()
         messagebus.handle(commands.CreateBatch("b1", "POPULAR-CURTAINS", 9, None), uow)
 
-        with mock.patch("allocation.email.send") as mock_send_mail:
+        with mock.patch("allocation.adapters.email.send") as mock_send_mail:
             messagebus.handle(commands.Allocate("o1", "POPULAR-CURTAINS", 10), uow)
             assert mock_send_mail.call_args == mock.call(
                 "stock@made.com",

@@ -1,4 +1,5 @@
-from allocation import model, repository
+from allocation.domain import model
+from allocation.adapters import repository
 
 def test_get_by_batchref(session):
     repo = repository.SqlAlchemyRepository(session)

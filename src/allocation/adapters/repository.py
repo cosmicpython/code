@@ -1,6 +1,7 @@
 from typing import Set
 import abc
-from allocation import model, orm
+from allocation.domain import model
+from allocation.adapters import orm
 
 
 

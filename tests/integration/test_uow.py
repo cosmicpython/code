@@ -4,7 +4,7 @@ import time
 import traceback
 from typing import List
 import pytest
-from allocation import model
+from allocation.domain import model
 from allocation import unit_of_work
 from ..random_refs import random_sku, random_batchref, random_orderid
 

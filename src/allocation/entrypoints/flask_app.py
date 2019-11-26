@@ -40,7 +40,8 @@ def allocate_endpoint():
 
 @app.route("/allocations/<orderid>", methods=['GET'])
 def allocations_view_endpoint(orderid):
-    result = views.allocations(orderid)
+    uow = unit_of_work.SqlAlchemyUnitOfWork()
+    result = views.allocations(orderid, uow)
     if not result:
         return 'not found', 404
     return jsonify(result), 200

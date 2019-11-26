@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
 from allocation.domain import commands
-from allocation import exceptions, messagebus, unit_of_work
+from allocation.service_layer import exceptions, messagebus, unit_of_work
 from allocation.adapters import orm
 
 app = Flask(__name__)

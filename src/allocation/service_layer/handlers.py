@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from allocation import exceptions
 from allocation.domain import commands, events, model
 from allocation.adapters import email, redis_pubsub
+from allocation.service_layer import exceptions
 
 if TYPE_CHECKING:
-    from allocation import unit_of_work
+    from allocation.service_layer import unit_of_work
 
 
 def add_batch(

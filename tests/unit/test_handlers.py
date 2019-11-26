@@ -1,9 +1,9 @@
 from datetime import date
 from unittest import mock
 import pytest
-from allocation import exceptions, messagebus, unit_of_work
-from allocation.domain import commands
 from allocation.adapters import repository
+from allocation.domain import commands
+from allocation.service_layer import exceptions, messagebus, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):

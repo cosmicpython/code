@@ -5,7 +5,7 @@ import traceback
 from typing import List
 import pytest
 from allocation.domain import model
-from allocation import unit_of_work
+from allocation.service_layer import unit_of_work
 from ..random_refs import random_sku, random_batchref, random_orderid
 
 def insert_batch(session, ref, sku, qty, eta, product_version=1):

@@ -35,20 +35,20 @@ class MessageBus:
     def handle_event(self, event: events.Event):
         for handler in EVENT_HANDLERS[type(event)]:
             try:
-                print('handling event', event, 'with handler', handler, flush=True)
+                logging.debug('handling event %s with handler %s', event, handler)
                 self.call_handler_with_dependencies(handler, event)
             except:
-                print(f'Exception handling event {event}\n:{traceback.format_exc()}')
+                logging.exception('Exception handling event %s', event)
                 continue
 
     def handle_command(self, command: commands.Command):
-        print('handling command', command, flush=True)
+        logging.debug('handling command %s', command)
         try:
             handler = COMMAND_HANDLERS[type(command)]
             self.call_handler_with_dependencies(handler, command)
-        except Exception as e:
-            print(f'Exception handling command {command}: {e}')
-            raise e
+        except Exception:
+            logging.exception('Exception handling command %s', command)
+            raise
 
     def call_handler_with_dependencies(self, handler: Callable, message: Message):
         params = inspect.signature(handler).parameters

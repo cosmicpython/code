@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 import traceback
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
 from allocation import commands, events, handlers
@@ -21,21 +22,21 @@ def handle(message: Message, uow: unit_of_work.AbstractUnitOfWork):
 def handle_event(event: events.Event, uow: unit_of_work.AbstractUnitOfWork):
     for handler in EVENT_HANDLERS[type(event)]:
         try:
-            print('handling event', event, 'with handler', handler, flush=True)
+            logging.debug('handling event %s with handler %s', event, handler)
             handler(event, uow=uow)
         except:
-            print(f'Exception handling event {event}\n:{traceback.format_exc()}')
+            logging.exception('Exception handling event %s', event)
             continue
 
 
 def handle_command(command, uow: unit_of_work.AbstractUnitOfWork):
-    print('handling command', command, flush=True)
+    logging.debug('handling command %s', command)
     try:
         handler = COMMAND_HANDLERS[type(command)]
         return handler(command, uow=uow)
-    except Exception as e:
-        print(f'Exception handling command {command}: {e}')
-        raise e
+    except Exception:
+        logging.exception('Exception handling command %s', command)
+        raise
 
 
 EVENT_HANDLERS = {

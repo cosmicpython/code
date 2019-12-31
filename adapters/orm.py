@@ -4,7 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import mapper, relationship
 
-import model
+from domain import model
 
 
 metadata = MetaData()

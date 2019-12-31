@@ -1,4 +1,4 @@
-import model
+from domain import model
 from datetime import date
 
 

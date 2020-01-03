@@ -10,7 +10,6 @@ def insert_batch(ref, sku, qty, eta):
 
 
 def get_allocated_batch_ref(orderid, sku):
-    print(django_models.Allocation.objects.all())
     return django_models.Allocation.objects.get(
         line__orderid=orderid, line__sku=sku
     ).batch.reference

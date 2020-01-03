@@ -3,7 +3,7 @@ import pytest
 
 from allocation.adapters import repository
 from allocation.domain import events
-from allocation.service_layer import messagebus, unit_of_work
+from allocation.service_layer import handlers, messagebus, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):
@@ -65,7 +65,7 @@ class TestAllocate:
         uow = FakeUnitOfWork()
         messagebus.handle(events.BatchCreated("b1", "AREALSKU", 100, None), uow)
 
-        with pytest.raises(services.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
+        with pytest.raises(handlers.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
             messagebus.handle(events.AllocationRequired("o1", "NONEXISTENTSKU", 10) , uow)
 
 

@@ -18,6 +18,13 @@ class FakeRepository(repository.AbstractRepository):
         return list(self._batches)
 
 
+class FakeSession:
+    committed = False
+
+    def commit(self):
+        self.committed = True
+
+
 def test_returns_allocation():
     line = model.OrderLine("o1", "COMPLICATED-LAMP", 10)
     batch = model.Batch("b1", "COMPLICATED-LAMP", 100, eta=None)

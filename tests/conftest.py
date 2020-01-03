@@ -7,13 +7,6 @@ from requests.exceptions import ConnectionError
 from allocation import config
 
 
-@pytest.fixture
-def django_models():
-    from djangoproject.alloc import models
-
-    return models
-
-
 def wait_for_webapp_to_come_up():
     deadline = time.time() + 10
     url = config.get_api_url()
@@ -27,6 +20,6 @@ def wait_for_webapp_to_come_up():
 
 @pytest.fixture
 def restart_api():
-    (Path(__file__).parent / "../src/allocation/entrypoints/flask_app.py").touch()
+    (Path(__file__).parent / "../src/djangoproject/manage.py").touch()
     time.sleep(0.5)
     wait_for_webapp_to_come_up()

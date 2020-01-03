@@ -3,10 +3,11 @@ from datetime import date
 import pytest
 from allocation.domain import model
 from allocation.adapters import repository
+from djangoproject.alloc import models as django_models
 
 
 @pytest.mark.django_db
-def test_repository_can_save_a_batch(django_models):
+def test_repository_can_save_a_batch():
     batch = model.Batch("batch1", "RUSTY-SOAPDISH", 100, eta=date(2011, 12, 25))
 
     repo = repository.DjangoRepository()
@@ -20,7 +21,7 @@ def test_repository_can_save_a_batch(django_models):
 
 
 @pytest.mark.django_db
-def test_repository_can_retrieve_a_batch_with_allocations(django_models):
+def test_repository_can_retrieve_a_batch_with_allocations():
     sku = "PONY-STATUE"
     d_line = django_models.OrderLine.objects.create(orderid="order1", sku=sku, qty=12)
     d_batch1 = django_models.Batch.objects.create(

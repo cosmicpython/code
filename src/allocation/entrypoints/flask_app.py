@@ -3,6 +3,7 @@ from flask import Flask, request
 
 from allocation.adapters import orm
 from allocation.service_layer import services, unit_of_work
+from allocation.service_layer.services import InvalidSku
 
 app = Flask(__name__)
 orm.start_mappers()
@@ -32,7 +33,7 @@ def allocate_endpoint():
             request.json["qty"],
             unit_of_work.SqlAlchemyUnitOfWork(),
         )
-    except services.InvalidSku as e:
+    except InvalidSku as e:
         return {"message": str(e)}, 400
 
     return {"batchref": batchref}, 201

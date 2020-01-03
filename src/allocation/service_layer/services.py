@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import date
 
-from allocation.adapters import email
 from allocation.domain import model
 from allocation.domain.model import OrderLine
-from allocation.service_layer import unit_of_work
+from . import messagebus
+if TYPE_CHECKING:
+    from . import unit_of_work
 
 
 class InvalidSku(Exception):
@@ -38,6 +39,5 @@ def allocate(
             batchref = product.allocate(line)
             uow.commit()
             return batchref
-        except model.OutOfStock:
-            email.send_mail('stock@made.com', f'Out of stock for {line.sku}')
-            raise
+        finally:
+            messagebus.handle(product.events)

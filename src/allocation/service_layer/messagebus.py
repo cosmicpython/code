@@ -1,7 +1,7 @@
 # pylint: disable=broad-except
 from __future__ import annotations
 import logging
-from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 from allocation.domain import commands, events
 from . import handlers
 
@@ -53,22 +53,3 @@ def handle_command(
     except Exception:
         logger.exception('Exception handling command %s', command)
         raise
-
-
-EVENT_HANDLERS = {
-    events.Allocated: [
-        handlers.publish_allocated_event,
-        handlers.add_allocation_to_read_model
-    ],
-    events.Deallocated: [
-        handlers.remove_allocation_from_read_model,
-        handlers.reallocate,
-    ],
-    events.OutOfStock: [handlers.send_out_of_stock_notification],
-}  # type: Dict[Type[events.Event], List[Callable]]
-
-COMMAND_HANDLERS = {
-    commands.Allocate: handlers.allocate,
-    commands.CreateBatch: handlers.add_batch,
-    commands.ChangeBatchQuantity: handlers.change_batch_quantity,
-}  # type: Dict[Type[commands.Command], Callable]

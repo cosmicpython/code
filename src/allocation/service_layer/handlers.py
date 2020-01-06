@@ -41,10 +41,7 @@ def allocate(
 def reallocate(
         event: events.Deallocated, uow: unit_of_work.AbstractUnitOfWork
 ):
-    with uow:
-        product = uow.products.get(sku=event.sku)
-        product.events.append(commands.Allocate(**asdict(event)))
-        uow.commit()
+    allocate(commands.Allocate(**asdict(event)), uow=uow)
 
 
 def change_batch_quantity(

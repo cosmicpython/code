@@ -1,5 +1,5 @@
+import inspect
 from typing import Callable
-from allocation.domain import commands, events
 from allocation.adapters import email, orm, redis_eventpublisher
 from allocation.service_layer import handlers, messagebus, unit_of_work
 
@@ -14,25 +14,17 @@ def bootstrap(
     if start_orm:
         orm.start_mappers()
 
+    dependencies = {'uow': uow, 'send_mail': send_mail, 'publish': publish}
     injected_event_handlers = {
-        events.Allocated: [
-            lambda e: handlers.publish_allocated_event(e, publish),
-            lambda e: handlers.add_allocation_to_read_model(e, uow),
-        ],
-        events.Deallocated: [
-            lambda e: handlers.remove_allocation_from_read_model(e, uow),
-            lambda e: handlers.reallocate(e, uow),
-        ],
-        events.OutOfStock: [
-            lambda e: handlers.send_out_of_stock_notification(e, send_mail)
+        event_type: [
+            inject_dependencies(handler, dependencies)
+            for handler in event_handlers
         ]
+        for event_type, event_handlers in handlers.EVENT_HANDLERS.items()
     }
     injected_command_handlers = {
-        commands.Allocate: lambda c: handlers.allocate(c, uow),
-        commands.CreateBatch: \
-            lambda c: handlers.add_batch(c, uow),
-        commands.ChangeBatchQuantity: \
-            lambda c: handlers.change_batch_quantity(c, uow),
+        command_type: inject_dependencies(handler, dependencies)
+        for command_type, handler in handlers.COMMAND_HANDLERS.items()
     }
 
     return messagebus.MessageBus(

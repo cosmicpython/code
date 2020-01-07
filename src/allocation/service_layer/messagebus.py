@@ -31,6 +31,21 @@ def handle(
     return results
 
 
+def handle_event(
+    event: events.Event,
+    queue: List[Message],
+    uow: unit_of_work.AbstractUnitOfWork,
+):
+    for handler in EVENT_HANDLERS[type(event)]:
+        try:
+            logger.debug("handling event %s with handler %s", event, handler)
+            handler(event, uow=uow)
+            queue.extend(uow.collect_new_events())
+        except Exception:
+            logger.exception("Exception handling event %s", event)
+            continue
+
+
 HANDLERS = {
     events.BatchCreated: [handlers.add_batch],
     events.BatchQuantityChanged: [handlers.change_batch_quantity],

@@ -1,4 +1,4 @@
-# pylint: disable=bare-except
+# pylint: disable=broad-except
 from __future__ import annotations
 import logging
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
@@ -41,6 +41,22 @@ def handle_event(
         except Exception:
             logger.exception('Exception handling event %s', event)
             continue
+
+
+def handle_command(
+    command: commands.Command,
+    queue: List[Message],
+    uow: unit_of_work.AbstractUnitOfWork
+):
+    logger.debug('handling command %s', command)
+    try:
+        handler = COMMAND_HANDLERS[type(command)]
+        result = handler(command, uow=uow)
+        queue.extend(uow.collect_new_events())
+        return result
+    except Exception:
+        logger.exception('Exception handling command %s', command)
+        raise
 
 
 HANDLERS = {

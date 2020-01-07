@@ -59,10 +59,12 @@ def handle_command(
         raise
 
 
-HANDLERS = {
-    events.BatchCreated: [handlers.add_batch],
-    events.BatchQuantityChanged: [handlers.change_batch_quantity],
-    events.AllocationRequired: [handlers.allocate],
+EVENT_HANDLERS = {
     events.OutOfStock: [handlers.send_out_of_stock_notification],
-
 }  # type: Dict[Type[events.Event], List[Callable]]
+
+COMMAND_HANDLERS = {
+    commands.Allocate: handlers.allocate,
+    commands.CreateBatch: handlers.add_batch,
+    commands.ChangeBatchQuantity: handlers.change_batch_quantity,
+}  # type: Dict[Type[commands.Command], Callable]

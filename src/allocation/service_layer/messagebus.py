@@ -1,4 +1,4 @@
-# pylint: disable=broad-except
+# pylint: disable=broad-except, attribute-defined-outside-init
 from __future__ import annotations
 import logging
 from typing import Callable, Dict, List, Union, Type, TYPE_CHECKING
@@ -36,31 +36,23 @@ class MessageBus:
                 raise Exception(f'{message} was not an Event or Command')
 
 
-def handle_event(
-    event: events.Event,
-    queue: List[Message],
-    uow: unit_of_work.AbstractUnitOfWork
-):
-    for handler in EVENT_HANDLERS[type(event)]:
+    def handle_event(self, event: events.Event):
+        for handler in self.event_handlers[type(event)]:
+            try:
+                logger.debug('handling event %s with handler %s', event, handler)
+                handler(event)
+                self.queue.extend(self.uow.collect_new_events())
+            except Exception:
+                logger.exception('Exception handling event %s', event)
+                continue
+
+
+    def handle_command(self, command: commands.Command):
+        logger.debug('handling command %s', command)
         try:
-            logger.debug('handling event %s with handler %s', event, handler)
-            handler(event, uow=uow)
-            queue.extend(uow.collect_new_events())
+            handler = self.command_handlers[type(command)]
+            handler(command)
+            self.queue.extend(self.uow.collect_new_events())
         except Exception:
-            logger.exception('Exception handling event %s', event)
-            continue
-
-
-def handle_command(
-    command: commands.Command,
-    queue: List[Message],
-    uow: unit_of_work.AbstractUnitOfWork
-):
-    logger.debug('handling command %s', command)
-    try:
-        handler = COMMAND_HANDLERS[type(command)]
-        handler(command, uow=uow)
-        queue.extend(uow.collect_new_events())
-    except Exception:
-        logger.exception('Exception handling command %s', command)
-        raise
+            logger.exception('Exception handling command %s', command)
+            raise

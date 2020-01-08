@@ -16,8 +16,9 @@ def post_to_allocate(orderid, sku, qty, expect_success=True):
     r = requests.post(f'{url}/allocate', json={
         'orderid': orderid, 'sku': sku, 'qty': qty,
     })
+    # NOTE: print(r.history) will show the intermediate re-direct
     if expect_success:
-        assert r.status_code == 202
+        assert r.status_code == 200
     return r
 
 def get_allocation(orderid):

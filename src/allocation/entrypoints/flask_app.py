@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 
 from allocation.domain import commands
 from allocation.adapters import notifications, orm, redis_eventpublisher
@@ -34,14 +34,15 @@ def add_batch():
 @app.route("/allocate", methods=['POST'])
 def allocate_endpoint():
     try:
+        orderid = request.json['orderid']
         cmd = commands.Allocate(
-            request.json['orderid'], request.json['sku'], request.json['qty'],
+            orderid, request.json['sku'], request.json['qty'],
         )
         bus.handle(cmd)
+        return redirect(f'/allocations/{orderid}', code=302)
     except InvalidSku as e:
         return jsonify({'message': str(e)}), 400
 
-    return 'OK', 202
 
 
 @app.route("/allocations/<orderid>", methods=['GET'])

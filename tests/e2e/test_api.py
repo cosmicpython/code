@@ -13,9 +13,6 @@ def test_happy_path_returns_202_and_batch_is_allocated():
     api_client.post_to_add_batch(batch3, othersku, 100, None)
 
     r = api_client.post_to_allocate(orderid, sku, qty=3)
-    assert r.status_code == 202
-
-    r = api_client.get_allocation(orderid)
     assert r.ok
     assert r.json() == [
         {'sku': sku, 'batchref': batch2},

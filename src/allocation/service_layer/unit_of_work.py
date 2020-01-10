@@ -1,6 +1,6 @@
 # pylint: disable=attribute-defined-outside-init
 from __future__ import annotations
-import abc
+from typing import Protocol
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -12,17 +12,49 @@ from . import messagebus
 
 
 
-class AbstractUnitOfWork(abc.ABC):
-    products: repository.AbstractRepository
+class AbstractUnitOfWork(Protocol):
+    products: repository.TrackingRepository
 
     def __enter__(self) -> AbstractUnitOfWork:
-        return self
+        ...
 
     def __exit__(self, *args):
-        self.rollback()
+        ...
 
     def commit(self):
-        self._commit()
+        ...
+
+    def rollback(self):
+        ...
+
+
+
+class AutoRollbackUoW:
+
+    def __init__(self, uow: AbstractUnitOfWork):
+        self._uow = uow
+        self.products = self._uow.products
+
+    def __enter__(self):
+        return self._uow.__enter__()
+
+    def __exit__(self, *args):
+        self._uow.rollback()
+        return self._uow.__exit__(*args)
+
+    def __getattr__(self, name):
+        return getattr(self._uow, name)
+
+
+
+class EventPublishingUoW:
+
+    def __init__(self, uow: AutoRollbackUoW):
+        self._uow = uow
+        self.products = self._uow.products
+
+    def commit(self):
+        self._uow.commit()
         self.publish_events()
 
     def publish_events(self):
@@ -31,13 +63,14 @@ class AbstractUnitOfWork(abc.ABC):
                 event = product.events.pop(0)
                 messagebus.handle(event)
 
-    @abc.abstractmethod
-    def _commit(self):
-        raise NotImplementedError
 
-    @abc.abstractmethod
-    def rollback(self):
-        raise NotImplementedError
+    def __enter__(self):
+        return self._uow.__enter__()
+    def __exit__(self, *args):
+        return self._uow.__exit__(*args)
+
+    def __getattr__(self, name):
+        return getattr(self._uow, name)
 
 
 
@@ -46,7 +79,7 @@ DEFAULT_SESSION_FACTORY = sessionmaker(bind=create_engine(
     isolation_level="SERIALIZABLE",
 ))
 
-class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
+class SqlAlchemyUnitOfWork:
 
     def __init__(self, session_factory=DEFAULT_SESSION_FACTORY):
         self.session_factory = session_factory
@@ -56,13 +89,12 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.products = repository.TrackingRepository(
             repository.SqlAlchemyRepository(self.session)
         )
-        return super().__enter__()
+        return self
 
     def __exit__(self, *args):
-        super().__exit__(*args)
         self.session.close()
 
-    def _commit(self):
+    def commit(self):
         self.session.commit()
 
     def rollback(self):

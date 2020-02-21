@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+
+  fake_cargo_api:
+    build:
+      context: ./fake_cargo_api
+    volumes:
+      - ./fake_cargo_api/fake_cargo_api.py:/fake_cargo_api.py
+    environment:
+      - FLASK_APP=/fake_cargo_api.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1 
+    entrypoint:
+      - flask
+      - run
+      - --port=8543
+      - --reload
+    ports:
+      - "8543:8543"

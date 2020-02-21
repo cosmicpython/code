@@ -19,7 +19,8 @@ class CargoAPI(Protocol):
 
 
 class RealCargoAPI:
-    API_URL = 'https://example.org'
+    def __init__(self, api_url='https://example.org'):
+        self.api_url = api_url
 
 
     def get_latest_eta(self, reference: str) -> date:
@@ -31,7 +32,7 @@ class RealCargoAPI:
             )
             return None
 
-        [journey] = requests.get(f"{self.API_URL}/shipments/{external_shipment_id}/journeys").json()['items']
+        [journey] = requests.get(f"{self.api_url}/shipments/{external_shipment_id}/journeys").json()['items']
         return date.fromisoformat(journey['eta'])
 
 
@@ -39,7 +40,7 @@ class RealCargoAPI:
     def sync(self, shipment: Shipment) -> None:
         external_shipment_id = self._get_shipment_id(shipment.reference)
         if external_shipment_id is None:
-            requests.post(f'{self.API_URL}/shipments/', json={
+            r = requests.post(f'{self.api_url}/shipments/', json={
                 'client_reference': shipment.reference,
                 'arrival_date': shipment.eta.isoformat()[:10] if shipment.eta else None,
                 'products': [
@@ -47,9 +48,11 @@ class RealCargoAPI:
                     for ol in shipment.lines
                 ]
             })
+            assert r.ok, f'{r.status_code}: {r.text[:20]}'
 
         else:
-            requests.put(f'{self.API_URL}/shipments/{external_shipment_id}/', json={
+            r = requests.put(f'{self.api_url}/shipments/{external_shipment_id}/', json={
+                'id': external_shipment_id,
                 'client_reference': shipment.reference,
                 'arrival_date': shipment.eta.isoformat()[:10] if shipment.eta else None,
                 'products': [
@@ -57,11 +60,12 @@ class RealCargoAPI:
                     for ol in shipment.lines
                 ]
             })
+            assert r.ok, f'{r.status_code}: {r.text[:20]}'
 
 
     def _get_shipment_id(self, our_reference) -> Optional[str]:
         try:
-            their_shipments = requests.get(f"{self.API_URL}/shipments/").json()['items']
+            their_shipments = requests.get(f"{self.api_url}/shipments/").json()['items']
             return next(
                 (s['id'] for s in their_shipments if s['client_reference'] == our_reference),
                 None

@@ -8,6 +8,8 @@ import requests.exceptions
 
 from domain import Shipment, OrderLine
 from notifications import notify_delay, notify_new_large_shipment
+from cargo_api import RealCargoAPI
+cargo_api = RealCargoAPI()
 
 API_URL = 'https://example.org'
 
@@ -18,7 +20,7 @@ def create_shipment(quantities: Dict[str, int], incoterm) -> Shipment:
     order_lines = [OrderLine(sku=sku, qty=qty) for sku, qty in quantities.items()]
     shipment = Shipment(reference=reference, lines=order_lines, eta=None, incoterm=incoterm)
     shipment.save()
-    sync_to_api(shipment)
+    cargo_api.sync(shipment)
     return shipment
 
 
@@ -48,38 +50,3 @@ def get_updated_eta(shipment):
     shipment.save()
 
 
-
-def sync_to_api(shipment):
-    external_shipment_id = get_shipment_id(shipment.reference)
-    if external_shipment_id is None:
-        requests.post(f'{API_URL}/shipments/', json={
-            'client_reference': shipment.reference,
-            'arrival_date': shipment.eta,
-            'products': [
-                {'sku': ol.sku, 'quantity': ol.qty}
-                for ol in shipment.lines
-            ]
-        })
-
-    else:
-        requests.put(f'{API_URL}/shipments/{external_shipment_id}/', json={
-            'client_reference': shipment.reference,
-            'arrival_date': shipment.eta,
-            'products': [
-                {'sku': ol.sku, 'quantity': ol.qty}
-                for ol in shipment.lines
-            ]
-        })
-
-
-def get_shipment_id(our_reference) -> Optional[str]:
-    try:
-        their_shipments = requests.get(f"{API_URL}/shipments/").json()['items']
-        return next(
-            (s['id'] for s in their_shipments if s['client_reference'] == our_reference),
-            None
-        )
-
-    except requests.exceptions.RequestException:
-        logging.exception('Error retrieving shipment')
-        raise

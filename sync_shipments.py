@@ -1,40 +1,49 @@
 import logging
+import uuid
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Optional
+from typing import Dict, List, Optional
 import requests
 import requests.exceptions
 
+from domain import Shipment, OrderLine
 from notifications import notify_delay, notify_new_large_shipment
 
 API_URL = 'https://example.org'
 
-@dataclass
-class OrderLine:
-    sku: str
-    qty: int
+
+def create_shipment(quantities: Dict[str, int], incoterm):
+    reference = uuid.uuid4().hex[:10]
+    order_lines = [OrderLine(sku=sku, qty=qty) for sku, qty in quantities.items()]
+    shipment = Shipment(reference=reference, lines=order_lines, eta=None, incoterm=incoterm)
+    shipment.save()
+    sync_to_api(shipment)
 
 
-@dataclass
-class Shipment:
-    reference: str
-    lines: List[OrderLine]
-    eta: Optional[date]
-    incoterm: str
+def get_updated_eta(shipment):
+    external_shipment_id = get_shipment_id(shipment.reference)
+    if external_shipment_id is None:
+        logging.warning(
+            'tried to get updated eta for shipment %s not yet sent to partners',
+            shipment.reference
+        )
+        return
 
-
-def set_eta(shipment, eta):
+    [journey] = requests.get(f"{API_URL}/shipments/{external_shipment_id}/journeys").json()['items']
+    latest_eta = journey['eta']
+    if latest_eta == shipment.eta:
+        return
     logging.info(
         'setting new shipment eta for %s: %s (was %s)',
-        shipment.reference, eta, shipment.eta
+        shipment.reference, latest_eta, shipment.eta
     )
-    if shipment.eta is not None and eta > shipment.eta:
-        notify_delay(shipment_ref=shipment.reference, delay=eta - shipment.eta)
+    if shipment.eta is not None and latest_eta > shipment.eta:
+        notify_delay(shipment_ref=shipment.reference, delay=latest_eta - shipment.eta)
     if shipment.eta is None and shipment.incoterm == 'FOB' and len(shipment.lines) > 10:
-        notify_new_large_shipment(shipment_ref=shipment.reference, eta=eta)
+        notify_new_large_shipment(shipment_ref=shipment.reference, eta=latest_eta)
 
-    shipment.eta = eta
-    sync_to_api(shipment)
+    shipment.eta = latest_eta
+    shipment.save()
 
 
 
@@ -43,7 +52,7 @@ def sync_to_api(shipment):
     if external_shipment_id is None:
         requests.post(f'{API_URL}/shipments/', json={
             'client_reference': shipment.reference,
-            'arrival_date': shipment.eta.isoformat()[:10],
+            'arrival_date': shipment.eta,
             'products': [
                 {'sku': ol.sku, 'quantity': ol.quantity}
                 for ol in shipment.lines
@@ -53,7 +62,7 @@ def sync_to_api(shipment):
     else:
         requests.put(f'{API_URL}/shipments/{external_shipment_id}', json={
             'client_reference': shipment.reference,
-            'arrival_date': shipment.eta.isoformat()[:10],
+            'arrival_date': shipment.eta,
             'products': [
                 {'sku': ol.sku, 'quantity': ol.quantity}
                 for ol in shipment.lines

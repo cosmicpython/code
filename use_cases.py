@@ -8,13 +8,12 @@ import requests.exceptions
 
 from domain import Shipment, OrderLine
 from notifications import notify_delay, notify_new_large_shipment
-from cargo_api import RealCargoAPI
-cargo_api = RealCargoAPI()
+from cargo_api import CargoAPI, RealCargoAPI
 
 API_URL = 'https://example.org'
 
 
-def create_shipment(quantities: Dict[str, int], incoterm) -> Shipment:
+def create_shipment(quantities: Dict[str, int], incoterm: str, cargo_api: CargoAPI) -> Shipment:
     print(uuid)
     reference = uuid.uuid4().hex[:10]
     order_lines = [OrderLine(sku=sku, qty=qty) for sku, qty in quantities.items()]

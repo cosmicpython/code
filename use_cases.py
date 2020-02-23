@@ -25,6 +25,7 @@ def create_shipment(quantities: Dict[str, int], incoterm) -> Shipment:
 
 
 def get_updated_eta(shipment):
+    # TODO: needs converting to use cargo_api
     external_shipment_id = get_shipment_id(shipment.reference)
     if external_shipment_id is None:
         logging.warning(

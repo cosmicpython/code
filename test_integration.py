@@ -8,6 +8,7 @@ from domain import Shipment, OrderLine
 
 @pytest.fixture(autouse=True)
 def restart_fake_webapp():
+    # TODO: not working for some reason.
     subprocess.run('docker-compose exec -T fake_cargo_api touch /fake_cargo_api.py'.split())
     time.sleep(0.5)
 

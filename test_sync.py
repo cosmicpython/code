@@ -21,6 +21,6 @@ class FakeCargoAPI:
 
 
 def test_create_shipment_syncs_to_api():
-    mock_api = mock.Mock()
-    shipment = create_shipment({'sku1': 10}, incoterm='EXW', cargo_api=mock_api)
-    assert mock_api.sync.call_args == mock.call(shipment)
+    api = FakeCargoAPI()
+    shipment = create_shipment({'sku1': 10}, incoterm='EXW', cargo_api=api)
+    assert shipment in api

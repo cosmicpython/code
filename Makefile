@@ -16,6 +16,9 @@ integration-tests: up
 e2e-tests: up
 	docker-compose run --rm --no-deps --entrypoint=pytest api /tests/e2e
 
+thread-race: up
+	docker-compose run --rm --no-deps --entrypoint=pytest api -sv -vv /tests/e2e/test_queue_race.py
+
 logs:
 	docker-compose logs --tail=25 api redis_pubsub
 

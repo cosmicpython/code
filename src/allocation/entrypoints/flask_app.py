@@ -1,11 +1,17 @@
+import logging
 from datetime import datetime
+import sqlalchemy
 from flask import Flask, jsonify, request
 from allocation.domain import commands
 from allocation.service_layer.handlers import InvalidSku
 from allocation import bootstrap, views
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 bus = bootstrap.bootstrap()
+
 
 
 @app.route("/add_batch", methods=['POST'])
@@ -22,15 +28,19 @@ def add_batch():
 
 @app.route("/allocate", methods=['POST'])
 def allocate_endpoint():
-    try:
-        cmd = commands.Allocate(
-            request.json['orderid'], request.json['sku'], request.json['qty'],
-        )
-        bus.handle(cmd)
-    except InvalidSku as e:
-        return jsonify({'message': str(e)}), 400
+    while True:
+        try:
+            cmd = commands.Allocate(
+                request.json['orderid'], request.json['sku'], request.json['qty'],
+            )
+            bus.handle(cmd)
+            return 'OK', 202
+        except InvalidSku as e:
+            return jsonify({'message': str(e)}), 400
+        except sqlalchemy.exc.OperationalError:
+            logger.error("Could not allocate!!!!!!!!!!!!")
+            # Just try again!
 
-    return 'OK', 202
 
 
 @app.route("/allocations/<orderid>", methods=['GET'])

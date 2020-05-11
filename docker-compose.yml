@@ -42,11 +42,7 @@ services:
     volumes:
       - ./src:/src
       - ./tests:/tests
-    entrypoint:
-      - flask
-      - run
-      - --host=0.0.0.0
-      - --port=80
+    entrypoint: ["gunicorn", "--bind", "0.0.0.0:80", "-k", "gthread", "--threads", "2", "-w", "1","allocation.entrypoints.flask_app:app"]
     ports:
       - "5005:80"
 

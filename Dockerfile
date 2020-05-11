@@ -2,6 +2,7 @@ FROM python:3.8-alpine
 
 RUN apk add --no-cache --virtual .build-deps gcc postgresql-dev musl-dev python3-dev
 RUN apk add libpq
+RUN pip install gunicorn gunicorn[gthread]
 
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt

@@ -1,6 +1,8 @@
 # pylint: disable=broad-except, attribute-defined-outside-init
 from __future__ import annotations
 import logging
+import time
+import random
 from typing import Callable, Dict, List, Union, Type, TYPE_CHECKING
 from allocation.domain import commands, events
 
@@ -26,6 +28,8 @@ class MessageBus:
 
     def handle(self, message: Message):
         self.queue = [message]
+        qid = id(self.queue)
+
         while self.queue:
             message = self.queue.pop(0)
             if isinstance(message, events.Event):
@@ -34,6 +38,9 @@ class MessageBus:
                 self.handle_command(message)
             else:
                 raise Exception(f'{message} was not an Event or Command')
+
+        if qid != id(self.queue):
+            logger.error("Oops! Who am I?")
 
 
     def handle_event(self, event: events.Event):
@@ -46,12 +53,13 @@ class MessageBus:
                 logger.exception('Exception handling event %s', event)
                 continue
 
-
     def handle_command(self, command: commands.Command):
         logger.debug('handling command %s', command)
         try:
             handler = self.command_handlers[type(command)]
             handler(command)
+            #ts = random.choice([0.1, 0.1, 1])
+            #time.sleep(ts)
             self.queue.extend(self.uow.collect_new_events())
         except Exception:
             logger.exception('Exception handling command %s', command)

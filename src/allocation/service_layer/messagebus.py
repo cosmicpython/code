@@ -21,13 +21,15 @@ class MessageBus:
         self,
         event_handlers: Dict[Type[events.Event], List[Callable]],
         command_handlers: Dict[Type[commands.Command], Callable],
+        uow_klass=SqlAlchemyUnitOfWork
     ):
+        self.uow_klass = uow_klass
         self.event_handlers = event_handlers
         self.command_handlers = command_handlers
 
     def handle(self, message: Message):
         queue = [message]
-        uow = SqlAlchemyUnitOfWork()
+        uow = self.uow_klass()
         while queue:
             message = queue.pop(0)
             if isinstance(message, events.Event):

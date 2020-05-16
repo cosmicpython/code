@@ -4,6 +4,7 @@ import sqlalchemy
 from flask import Flask, jsonify, request
 from allocation.domain import commands
 from allocation.service_layer.handlers import InvalidSku
+from allocation.service_layer.unit_of_work import SqlAlchemyUnitOfWork
 from allocation import bootstrap, views
 
 logging.basicConfig()
@@ -22,7 +23,8 @@ def add_batch():
     cmd = commands.CreateBatch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
     )
-    bus.handle(cmd)
+    uow = SqlAlchemyUnitOfWork()
+    bus.handle(cmd, uow)
     return 'OK', 201
 
 
@@ -33,7 +35,8 @@ def allocate_endpoint():
             cmd = commands.Allocate(
                 request.json['orderid'], request.json['sku'], request.json['qty'],
             )
-            bus.handle(cmd)
+            uow = SqlAlchemyUnitOfWork()
+            bus.handle(cmd, uow)
             return 'OK', 202
         except InvalidSku as e:
             return jsonify({'message': str(e)}), 400

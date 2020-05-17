@@ -35,7 +35,7 @@ def test_parallel_allocation():
     # Place a large number of orders with threads
     n_orders = 100
     #n_threads = 20 # will fail
-    n_threads = 10 # will pass
+    n_threads = 1 # will pass
     success, failures = place_orders(n_orders, sku, max_workers=n_threads)
     failed_allocations = [int(f.split("-")[1]) for f in failures]
 

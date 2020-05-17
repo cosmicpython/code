@@ -23,8 +23,7 @@ def add_batch():
     cmd = commands.CreateBatch(
         request.json['ref'], request.json['sku'], request.json['qty'], eta,
     )
-    uow = SqlAlchemyUnitOfWork()
-    bus.handle(cmd, uow)
+    bus.handle(cmd)
     return 'OK', 201
 
 
@@ -36,7 +35,7 @@ def allocate_endpoint():
                 request.json['orderid'], request.json['sku'], request.json['qty'],
             )
             uow = SqlAlchemyUnitOfWork()
-            bus.handle(cmd, uow)
+            bus.handle(cmd)
             return 'OK', 202
         except InvalidSku as e:
             return jsonify({'message': str(e)}), 400
@@ -48,7 +47,8 @@ def allocate_endpoint():
 
 @app.route("/allocations/<orderid>", methods=['GET'])
 def allocations_view_endpoint(orderid):
-    result = views.allocations(orderid, bus.uow)
+    uow = SqlAlchemyUnitOfWork()
+    result = views.allocations(orderid, uow)
     if not result:
         return 'not found', 404
     return jsonify(result), 200

@@ -38,8 +38,8 @@ make all # builds, brings containers up, runs tests
 ```sh
 python3.8 -m venv .venv && source ./venv/bin/activate # or however you like to create virtualenvs
 
-# for chapters 1
-pip install pytest sqlalchemy 
+# for chapter 1
+pip install pytest 
 
 # for chapter 2
 pip install pytest sqlalchemy

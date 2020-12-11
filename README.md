@@ -68,7 +68,7 @@ make up
 pytest tests/unit
 pytest tests/integration
 pytest tests/e2e
-
+```
 
 ## Makefile
 

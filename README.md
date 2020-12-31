@@ -13,7 +13,7 @@ https://github.com/python-leap/code/branches/all
 ## Exercises
 
 Branches for the exercises follow the convention `{chatper_name}_exercise`, eg 
-https://github.com/python-leap/code/tree/chapter_03_service_layer_exercise
+https://github.com/python-leap/code/tree/chapter_04_service_layer_exercise
 
 
 ## Requirements

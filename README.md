@@ -36,7 +36,7 @@ make all # builds, brings containers up, runs tests
 ## Creating a local virtualenv (optional)
 
 ```sh
-python3.8 -m venv .venv && source ./venv/bin/activate # or however you like to create virtualenvs
+python3.8 -m venv .venv && source .venv/bin/activate # or however you like to create virtualenvs
 
 # for chapter 1
 pip install pytest 

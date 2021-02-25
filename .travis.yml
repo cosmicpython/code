@@ -1,6 +1,8 @@
 dist: xenial
 language: python
 python: 3.8
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 script:
 - make all
 branches:

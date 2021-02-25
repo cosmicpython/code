@@ -1,10 +1,11 @@
 dist: xenial
 language: python
 python: 3.8
-
 script:
 - make all
-
 branches:
   except:
-  - /.*_exercise$/
+  - "/.*_exercise$/"
+env:
+  global:
+    secure: cNctlzVCjUj1oOrRW0aryxhJHB/u0b6vmn532jcgyCRS1aQjMJtT61O7tW6yMk4wOaH4Lr0kAI0J6+1lnRYf5g11H1M+IpEHGMWgJgImsysDpLRWUGmDJTez/ii8psk0SfOP/0ZwQp+QxOB92CHdPeOPOmu2HFa00V82/H7gousXR7ywQRNthLHwso36O8+UoHc4qw8nIbjcHzbfD6ysJNynmaUMlB3mRTU1hkjGKKpA2Xyl4tmkIhp3NCPJc0WR4SgB3y0u3dVOC+RtbRzl/XpEbjsZHHNloBirK+8ERn9ISBBh/mvfo6qTix743e+xvhtBlLJjk3o4H0VMH+wQ3zIpIh4TKbhPCMqWY3gvtKDVRHD+Sywk2TE6zSz0sDPWk248MC2QsL7sgeFwcnFHOWy2iKf4YyuZtoaJuX+2tw23cDCdMS6wbARlT8Kb5QwMlsxuKYN/04kQB+9nXTVsWKJGIwLKdYRzshnlzqB/UEe2vrjZcbBixCp4pbZ2jSzw2881he4KSbVGIJdZYSFetMuaN0P9obtdaJU4V+IhwzFyyapjZhEGCTl+l/m8uGdJ5DOhFlZ7OczHja7DKUuQvB3AbnMGvN518C+fJkJpWxAn5UeIp3d0ZZm32XVKt3k8PJaP7LBYdxnr3JCRit7+kNnlP7Ho0NjvX6GTHQ+r+JM=

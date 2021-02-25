@@ -1,6 +1,6 @@
-dist: xenial
+dist: focal
 language: python
-python: 3.8
+python: 3.9
 before_install:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 script:

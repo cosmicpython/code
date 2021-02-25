@@ -3,23 +3,23 @@
 ## Chapters
 
 Each chapter has its own branch which contains all the commits for that chapter,
-so it has the state that corresponds to the _end_ of that chapter.  If you want
-to try and code along with a chapter, you'll want to check out the branch for the
-previous chapter.
+so it has the state that corresponds to the _end_ of that chapter.
+If you want to try and code along with a chapter,
+you'll want to check out the branch for the previous chapter.
 
-https://github.com/python-leap/code/branches/all
+https://github.com/cosmicpython/code/branches/all
 
 
 ## Exercises
 
-Branches for the exercises follow the convention `{chatper_name}_exercise`, eg 
-https://github.com/python-leap/code/tree/chapter_04_service_layer_exercise
+Branches for the exercises follow the convention `{chapter_name}_exercise`,
+eg https://github.com/cosmicpython/code/tree/chapter_04_service_layer_exercise
 
 
 ## Requirements
 
 * docker with docker-compose
-* for chapters 1 and 2, and optionally for the rest: a local python3.7 virtualenv
+* for chapters 1 and 2, and optionally for the rest: a local python3.8 virtualenv
 
 
 ## Building the containers

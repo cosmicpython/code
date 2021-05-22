@@ -60,9 +60,9 @@ pip install -e src/
 ```sh
 make test
 # or, to run individual test types
-make unit
-make integration
-make e2e
+make unit-tests
+make integration-tests
+make e2e-tests
 # or, if you have a local virtualenv
 make up
 pytest tests/unit

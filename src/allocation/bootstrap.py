@@ -35,7 +35,6 @@ def bootstrap(
     }
 
     return messagebus.MessageBus(
-        uow=uow,
         event_handlers=injected_event_handlers,
         command_handlers=injected_command_handlers,
     )

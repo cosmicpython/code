@@ -64,7 +64,11 @@ def test_records_out_of_stock_event_if_cannot_allocate():
     product.allocate(OrderLine("order1", "SMALL-FORK", 10))
 
     allocation = product.allocate(OrderLine("order2", "SMALL-FORK", 1))
-    assert product.events[-1] == events.OutOfStock(sku="SMALL-FORK")
+    queue = events.event_queue.get()
+    last_event = None
+    while not queue.empty():
+        last_event = queue.get_nowait()
+    assert last_event == events.OutOfStock(sku="SMALL-FORK")
     assert allocation is None
 
 

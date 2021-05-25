@@ -1,12 +1,13 @@
 # app
 sqlalchemy
-flask
+flask[async]
 psycopg2-binary
 redis
 
 # dev/tests
 pytest
 pytest-icdiff
+pytest-asyncio
 mypy
 pylint
 requests

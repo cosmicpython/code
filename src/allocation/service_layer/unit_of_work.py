@@ -13,21 +13,21 @@ from allocation.adapters import repository
 class AbstractUnitOfWork(abc.ABC):
     products: repository.AbstractRepository
 
-    def __enter__(self) -> AbstractUnitOfWork:
+    async def __aenter__(self) -> AbstractUnitOfWork:
         return self
 
-    def __exit__(self, *args):
-        self.rollback()
+    async def __aexit__(self, *args):
+        await self.rollback()
 
-    def commit(self):
-        self._commit()
+    async def commit(self):
+        await self._commit()
 
     @abc.abstractmethod
-    def _commit(self):
+    async def _commit(self):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def rollback(self):
+    async def rollback(self):
         raise NotImplementedError
 
 
@@ -43,17 +43,17 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __init__(self, session_factory=DEFAULT_SESSION_FACTORY):
         self.session_factory = session_factory
 
-    def __enter__(self):
+    async def __aenter__(self):
         self.session = self.session_factory()  # type: Session
         self.products = repository.SqlAlchemyRepository(self.session)
-        return super().__enter__()
+        return await super().__aenter__()
 
-    def __exit__(self, *args):
-        super().__exit__(*args)
+    async def __aexit__(self, *args):
+        await super().__aexit__(*args)
         self.session.close()
 
-    def _commit(self):
+    async def _commit(self):
         self.session.commit()
 
-    def rollback(self):
+    async def rollback(self):
         self.session.rollback()

@@ -24,7 +24,7 @@ def handle_change_batch_quantity(m, bus):
     logger.info("handling %s", m)
     data = json.loads(m["data"])
     cmd = commands.ChangeBatchQuantity(ref=data["batchref"], qty=data["qty"])
-    bus.handle(cmd)
+    bus.handle_command(cmd)
 
 
 if __name__ == "__main__":

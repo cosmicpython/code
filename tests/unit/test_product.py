@@ -51,7 +51,11 @@ def test_outputs_allocated_event():
     expected = events.Allocated(
         orderid="oref", sku="RETRO-LAMPSHADE", qty=10, batchref=batch.reference
     )
-    assert product.events[-1] == expected
+    queue = events.event_queue.get()
+    last_event = None
+    while not queue.empty():
+        last_event = queue.get_nowait()
+    assert last_event == expected
 
 
 def test_records_out_of_stock_event_if_cannot_allocate():

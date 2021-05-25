@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, List, Set
-from . import commands, events
+from typing import List, Optional, Set
+
+from . import events
 
 
 class Product:
@@ -10,14 +12,13 @@ class Product:
         self.sku = sku
         self.batches = batches
         self.version_number = version_number
-        self.events = []  # type: List[events.Event]
 
     def allocate(self, line: OrderLine) -> str:
         try:
             batch = next(b for b in sorted(self.batches) if b.can_allocate(line))
             batch.allocate(line)
             self.version_number += 1
-            self.events.append(
+            events.issue_event(
                 events.Allocated(
                     orderid=line.orderid,
                     sku=line.sku,
@@ -27,7 +28,7 @@ class Product:
             )
             return batch.reference
         except StopIteration:
-            self.events.append(events.OutOfStock(line.sku))
+            events.issue_event(events.OutOfStock(line.sku))
             return None
 
     def change_batch_quantity(self, ref: str, qty: int):
@@ -35,7 +36,7 @@ class Product:
         batch._purchased_quantity = qty
         while batch.available_quantity < 0:
             line = batch.deallocate_one()
-            self.events.append(events.Deallocated(line.orderid, line.sku, line.qty))
+            events.issue_event(events.Deallocated(line.orderid, line.sku, line.qty))
 
 
 @dataclass(unsafe_hash=True)

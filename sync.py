@@ -56,5 +56,5 @@ def determine_actions(source_hashes, dest_hashes, source_folder, dest_folder):
             yield "MOVE", olddestpath, newdestpath
 
     for sha, filename in dest_hashes.items():
-        if sha not in source_hashes:
+        if sha not in source_hashes and filename not in source_hashes.values():
             yield "DELETE", dest_folder / filename

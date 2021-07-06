@@ -59,3 +59,9 @@ def test_when_a_file_has_been_renamed_in_the_source():
     dest_hashes = {"hash1": "fn2"}
     actions = determine_actions(source_hashes, dest_hashes, Path("/src"), Path("/dst"))
     assert list(actions) == [("MOVE", Path("/dst/fn2"), Path("/dst/fn1"))]
+
+def test_when_file_contents_differ():
+    src_hashes = {'hash1': 'fn1'}
+    dst_hashes = {'hash2': 'fn1'}
+    actions = determine_actions(src_hashes, dst_hashes, Path('/src'), Path('/dst'))
+    assert list(actions) == [('COPY', Path('/src/fn1'), Path('/dst/fn1'))]

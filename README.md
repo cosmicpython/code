@@ -45,6 +45,7 @@ pip install pytest
 pip install pytest sqlalchemy
 
 # for chapter 4+5
+pip install wheel
 pip install -r requirements.txt
 
 # for chapter 6+

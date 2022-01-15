@@ -61,14 +61,20 @@ def test_deallocate_decrements_available_quantity():
     services.allocate(line, repo, session)
     batch = repo.get(reference="b1")
     assert batch.available_quantity == 90
-    # services.deallocate(...
-    ...
+    services.deallocate(line, repo, session)
     assert batch.available_quantity == 100
 
 
 def test_deallocate_decrements_correct_quantity():
     ...  #  TODO
+    # Just a check for purchased quantity?
 
 
 def test_trying_to_deallocate_unallocated_batch():
-    ...  #  TODO: should this error or pass silently? up to you.
+    repo, session = FakeRepository([]), FakeSession()
+    line = model.OrderLine("o1", "BLUE-PLINTH", 10)
+    batch = model.Batch("b1", "BLUE-PLINTH", 100, eta=None)
+    services.add_batch(batch, repo, session)
+    batch = repo.get(reference="b1")
+    with pytest.raises(ValueError, match='Cannot deallocate'):
+        services.deallocate(line, repo, session)

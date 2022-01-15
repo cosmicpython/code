@@ -58,13 +58,17 @@ def test_unhappy_path_returns_400_and_error_message():
 def test_deallocate():
     sku, order1, order2 = random_sku(), random_orderid(), random_orderid()
     batch = random_batchref()
-    post_to_add_batch(batch, sku, 100, "2011-01-02")
     url = config.get_api_url()
+    r= requests.post(
+        f"{url}/add_batch",
+        json={"ref": batch, "sku": sku, "qty": 100, "eta": "2011-01-02"},
+    )
+    assert r.ok
     # fully allocate
     r = requests.post(
         f"{url}/allocate", json={"orderid": order1, "sku": sku, "qty": 100}
     )
-    assert r.json()["batchid"] == batch
+    assert r.json()["batchref"] == batch
 
     # cannot allocate second order
     r = requests.post(
@@ -73,12 +77,9 @@ def test_deallocate():
     assert r.status_code == 400
 
     # deallocate
+    # Just getting a connection aborted error
     r = requests.post(
-        f"{url}/deallocate",
-        json={
-            "orderid": order1,
-            "sku": sku,
-        },
+        f"{url}/deallocate", json={"orderid": order1, "sku": sku, "qty": 100},
     )
     assert r.ok
 

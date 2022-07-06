@@ -1,6 +1,6 @@
 # app
 psycopg2-binary
-django
+django==3.2.7
 dj-database-url
 
 # tests

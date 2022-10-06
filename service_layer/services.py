@@ -26,11 +26,12 @@ def add_batch(
 def allocate(
     orderid: str, sku: str, qty: int,
     repo: AbstractRepository, session
-) -> str:
+) -> Optional[str]:
     line = OrderLine(orderid, sku, qty)
     batches = repo.list()
     if not is_valid_sku(line.sku, batches):
         raise InvalidSku(f"Invalid sku {line.sku}")
-    batchref = model.allocate(line, batches)
+    updated_batch = model.allocate(line, batches)
+
     session.commit()
-    return batchref
+    return updated_batch.ref if updated_batch else None

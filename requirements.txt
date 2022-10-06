@@ -3,3 +3,5 @@ sqlalchemy
 flask
 psycopg2-binary
 requests
+mypy
+black

@@ -1,47 +1,45 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from datetime import date
-from typing import Optional, List, Set
+from typing import Optional, Iterable, List, Set
 
 
 class OutOfStock(Exception):
     pass
 
 
-def allocate(line: OrderLine, batches: List[Batch]) -> str:
-    try:
-        batch = next(b for b in sorted(batches) if b.can_allocate(line))
-        batch.allocate(line)
-        return batch.reference
-    except StopIteration:
-        raise OutOfStock(f"Out of stock for sku {line.sku}")
+def allocate(line: OrderLine, batches: List[Batch]) -> Optional[Batch]:
+    for b in sorted(batches):
+        if b.can_allocate(line):
+            return b.allocate(line)
+    raise OutOfStock(f"Out of stock for sku {line.sku}")
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(frozen=True)
 class OrderLine:
     orderid: str
     sku: str
     qty: int
 
 
+@dataclass(frozen=True)
 class Batch:
-    def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
-        self.reference = ref
-        self.sku = sku
-        self.eta = eta
-        self._purchased_quantity = qty
-        self._allocations = set()  # type: Set[OrderLine]
+    ref: str
+    sku: str
+    _purchased_quantity: int
+    eta: Optional[date]
+    _allocations: Set[OrderLine] = field(default_factory=set)
 
     def __repr__(self):
-        return f"<Batch {self.reference}>"
+        return f"<Batch {self.ref}>"
 
     def __eq__(self, other):
         if not isinstance(other, Batch):
             return False
-        return other.reference == self.reference
+        return other.ref == self.ref
 
     def __hash__(self):
-        return hash(self.reference)
+        return hash(self.ref)
 
     def __gt__(self, other):
         if self.eta is None:
@@ -50,13 +48,12 @@ class Batch:
             return True
         return self.eta > other.eta
 
-    def allocate(self, line: OrderLine):
+    def allocate(self, line: OrderLine) -> Self:
         if self.can_allocate(line):
-            self._allocations.add(line)
+            return replace(self, _allocations=self._allocations | {line})
 
     def deallocate(self, line: OrderLine):
-        if line in self._allocations:
-            self._allocations.remove(line)
+        return replace(self, _allocations=self._allocations - {line})
 
     @property
     def allocated_quantity(self) -> int:

@@ -3,10 +3,10 @@ from domain.model import Batch, OrderLine
 
 
 def test_allocating_to_a_batch_reduces_the_available_quantity():
-    batch = Batch("batch-001", "SMALL-TABLE", qty=20, eta=date.today())
+    batch = Batch("batch-001", "SMALL-TABLE", 20, eta=date.today())
     line = OrderLine("order-ref", "SMALL-TABLE", 2)
 
-    batch.allocate(line)
+    batch = batch.allocate(line)
 
     assert batch.available_quantity == 18
 
@@ -41,8 +41,8 @@ def test_cannot_allocate_if_skus_do_not_match():
 
 def test_allocation_is_idempotent():
     batch, line = make_batch_and_line("ANGULAR-DESK", 20, 2)
-    batch.allocate(line)
-    batch.allocate(line)
+    batch = batch.allocate(line)
+    batch = batch.allocate(line)
     assert batch.available_quantity == 18
 
 

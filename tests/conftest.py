@@ -5,26 +5,31 @@ from pathlib import Path
 import pytest
 import requests
 from requests.exceptions import ConnectionError
+from typing import Callable
 from sqlalchemy.exc import OperationalError
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncEngine,
+    AsyncSession,
+)
+
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from adapters.orm import metadata, start_mappers
+from adapters.orm import metadata
 import config
 
 
 @pytest.fixture
-def in_memory_db():
-    engine = create_engine("sqlite:///:memory:")
-    metadata.create_all(engine)
+async def in_memory_db() -> AsyncEngine:
+    engine = create_async_engine("sqlite:///:memory:")
+    async with engine.begin() as conn:
+        await conn.run_sync(metadata.create_all)
     return engine
 
 
 @pytest.fixture
-def session(in_memory_db):
-    start_mappers()
-    yield sessionmaker(bind=in_memory_db)()
-    clear_mappers()
+def session_maker(in_memory_db: AsyncEngine):
+    yield sessionmaker(bind=in_memory_db, class_=AsyncSession)
 
 
 def wait_for_postgres_to_come_up(engine):

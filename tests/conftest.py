@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 import pytest
+import pytest_asyncio
 import requests
 from requests.exceptions import ConnectionError
 from typing import Callable
@@ -19,17 +20,17 @@ from adapters.orm import metadata
 import config
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def in_memory_db() -> AsyncEngine:
-    engine = create_async_engine("sqlite:///:memory:")
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as conn:
         await conn.run_sync(metadata.create_all)
     return engine
 
 
-@pytest.fixture
-def session_maker(in_memory_db: AsyncEngine):
-    yield sessionmaker(bind=in_memory_db, class_=AsyncSession)
+@pytest_asyncio.fixture
+async def session_maker(in_memory_db: AsyncEngine):
+    return sessionmaker(bind=in_memory_db, class_=AsyncSession)
 
 
 def wait_for_postgres_to_come_up(engine):

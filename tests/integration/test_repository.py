@@ -11,12 +11,11 @@ async def test_repository_can_save_a_batch(session_maker):
     async with session_maker() as session:
         repo = repository.SqlAlchemyRepository(session)
         await repo.add(batch)
-        await repo.commit()
 
     async with session_maker() as session:
         async with session.begin():
-            rows = session.execute(
-                'SELECT reference, sku, _purchased_quantity, eta FROM "batches"'
+            rows = await session.execute(
+                'SELECT ref, sku, _purchased_quantity, eta FROM "batches"'
             )
     assert list(rows) == [("batch1", "RUSTY-SOAPDISH", 100, None)]
 

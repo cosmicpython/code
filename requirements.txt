@@ -5,3 +5,4 @@ psycopg2-binary
 requests
 mypy
 black
+aiosqlite

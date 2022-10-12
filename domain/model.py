@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from datetime import date
-from typing import Optional, Iterable, List, Set
+from typing import Any, Optional, Iterable, List, Set
 
 
 class OutOfStock(Exception):
@@ -30,29 +30,30 @@ class Batch:
     eta: Optional[date]
     _allocations: Set[OrderLine] = field(default_factory=set)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Batch {self.ref}>"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Batch):
             return False
         return other.ref == self.ref
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.ref)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Batch) -> bool:
         if self.eta is None:
             return False
         if other.eta is None:
             return True
         return self.eta > other.eta
 
-    def allocate(self, line: OrderLine) -> Self:
+    def allocate(self, line: OrderLine) -> Optional[Batch]:
         if self.can_allocate(line):
             return replace(self, _allocations=self._allocations | {line})
+        return None
 
-    def deallocate(self, line: OrderLine):
+    def deallocate(self, line: OrderLine) -> Batch:
         return replace(self, _allocations=self._allocations - {line})
 
     @property

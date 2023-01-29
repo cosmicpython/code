@@ -42,7 +42,7 @@ python3.8 -m venv .venv && source .venv/bin/activate # or however you like to cr
 pip install pytest 
 
 # for chapter 2
-pip install pytest sqlalchemy
+pip install pytest sqlalchemy==1.3.24
 
 # for chapter 4+5
 pip install requirements.txt

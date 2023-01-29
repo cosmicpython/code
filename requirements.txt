@@ -1,5 +1,5 @@
 # app
-sqlalchemy
+sqlalchemy==1.3.24
 flask
 psycopg2-binary
 

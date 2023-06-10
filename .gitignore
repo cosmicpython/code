@@ -1,4 +1,25 @@
-.venv
 .mypy_cache
 __pycache__
 *.egg-info
+requirements.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Folders created by the development environment
+.idea
+.DS_Store
+.AppleDouble
+.LSOverride
+
+*.sublime-project
+*.sublime-workspace
+
+.vscode/
+*.code-workspace

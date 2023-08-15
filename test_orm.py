@@ -60,7 +60,7 @@ def test_saving_allocations(session):
     session.add(batch)
     session.commit()
     rows = list(session.execute('SELECT orderline_id, batch_id FROM "allocations"'))
-    assert rows == [(batch.id, line.id)]
+    assert rows == [(line.id, batch.id)]
 
 
 def test_retrieving_allocations(session):

@@ -33,6 +33,8 @@ class Batch:
             return False
         elif self.sku != line.sku:
             return False
+        elif self.eta and self.eta > date.today():
+            return False
         return True
 
     def __eq__(self, other):
@@ -61,7 +63,14 @@ class OrderLine:
         self.qty = qty
 
 
+class OutOfStock(Exception):
+    pass
+
+
 def allocate(line: OrderLine, batches: list[Batch]) -> Optional[str]:
-    batch = next(b for b in sorted(batches) if b.can_allocate(line))
-    batch.allocate(line)
-    return batch.reference
+    try:
+        batch = next(b for b in sorted(batches) if b.can_allocate(line))
+        batch.allocate(line)
+        return batch.reference
+    except StopIteration:
+        raise OutOfStock(f"Out of stock for sku {line.sku}")

@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 import pytest
 
-from model import Batch, OrderLine, allocate
+from model import allocate, Batch, OrderLine, OutOfStock
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
@@ -10,7 +10,7 @@ later = tomorrow + timedelta(days=10)
 
 def make_batch_and_line(sku: str, batch_qty: int, line_qty: int):
     return (
-        Batch("1", sku, batch_qty, eta=date.today()),
+        Batch("1", sku, batch_qty, eta=None),
         OrderLine("order-ref", sku, line_qty),
     )
 
@@ -91,3 +91,19 @@ def test_prefers_earlier_batches():
     assert earliest.available_quantity == 90
     assert medium.available_quantity == 100
     assert latest.available_quantity == 100
+
+
+def test_allocate_returns_batch_ref():
+    in_stock_batch = Batch("in-stock-batch", "CLOCK", 100, eta=None)
+    shipment_batch = Batch("shipment-batch", "CLOCK", 100, eta=today)
+    line = OrderLine("oref", "CLOCK", 10)
+    allocation = allocate(line, [in_stock_batch, shipment_batch])
+    assert allocation == "in-stock-batch"
+
+
+def test_allocate_raises_out_of_stock_exception():
+    batch = Batch("batch1", "SMALL-TABLE", 10, eta=tomorrow)
+    line = OrderLine("order1", "SMALL-TABLE", 10)
+
+    with pytest.raises(OutOfStock, match="SMALL-TABLE"):
+        allocate(line, [batch])

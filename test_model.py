@@ -49,7 +49,7 @@ def test_can_deallocate():
 
 def test_can_only_deallocate_allocated_lines():
     batch, unallocated_line = make_batch_and_line("TRINKET", 20, 2)
-    batch.deallocate(line)
+    batch.deallocate(unallocated_line)
     assert batch.available_quantity == 20
 
 

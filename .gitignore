@@ -2,3 +2,10 @@
 .mypy_cache
 __pycache__
 *.egg-info
+
+# IDE
+.idea
+.vscode
+
+# Notes
+.jc-notes.md

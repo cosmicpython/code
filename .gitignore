@@ -5,3 +5,7 @@ __pycache__
 
 # IDE
 .idea
+.vscode
+
+# Notes
+.jc-notes.md

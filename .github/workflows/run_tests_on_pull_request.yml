@@ -1,0 +1,11 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: run tests
+        run: make all

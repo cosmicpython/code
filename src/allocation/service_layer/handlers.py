@@ -4,6 +4,7 @@ from dataclasses import asdict
 from typing import List, Dict, Callable, Type, TYPE_CHECKING
 from allocation.domain import commands, events, model
 from allocation.domain.model import OrderLine
+from sqlalchemy.sql import text
 
 if TYPE_CHECKING:
     from allocation.adapters import notifications
@@ -83,10 +84,10 @@ def add_allocation_to_read_model(
 ):
     with uow:
         uow.session.execute(
-            """
-            INSERT INTO allocations_view (orderid, sku, batchref)
-            VALUES (:orderid, :sku, :batchref)
-            """,
+            text(
+                "INSERT INTO allocations_view (orderid, sku, batchref)"
+                " VALUES (:orderid, :sku, :batchref)"
+            ),
             dict(orderid=event.orderid, sku=event.sku, batchref=event.batchref),
         )
         uow.commit()
@@ -98,10 +99,10 @@ def remove_allocation_from_read_model(
 ):
     with uow:
         uow.session.execute(
-            """
-            DELETE FROM allocations_view
-            WHERE orderid = :orderid AND sku = :sku
-            """,
+            text(
+                "DELETE FROM allocations_view"
+                " WHERE orderid = :orderid AND sku = :sku"
+            ),
             dict(orderid=event.orderid, sku=event.sku),
         )
         uow.commit()

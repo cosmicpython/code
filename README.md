@@ -3,23 +3,23 @@
 ## Chapters
 
 Each chapter has its own branch which contains all the commits for that chapter,
-so it has the state that corresponds to the _end_ of that chapter.  If you want
-to try and code along with a chapter, you'll want to check out the branch for the
-previous chapter.
+so it has the state that corresponds to the _end_ of that chapter.
+If you want to try and code along with a chapter,
+you'll want to check out the branch for the previous chapter.
 
-https://github.com/python-leap/code/branches/all
+https://github.com/cosmicpython/code/branches/all
 
 
 ## Exercises
 
-Branches for the exercises follow the convention `{chapter_name}_exercise`, eg 
-https://github.com/python-leap/code/tree/chapter_04_service_layer_exercise
+Branches for the exercises follow the convention `{chapter_name}_exercise`,
+eg https://github.com/cosmicpython/code/tree/chapter_04_service_layer_exercise
 
 
 ## Requirements
 
 * docker with docker-compose
-* for chapters 1 and 2, and optionally for the rest: a local python3.7 virtualenv
+* for chapters 1 and 2, and optionally for the rest: a local python3.8 virtualenv
 
 
 ## Building the containers
@@ -45,10 +45,10 @@ pip install pytest
 pip install pytest sqlalchemy
 
 # for chapter 4+5
-pip install requirements.txt
+pip install -r requirements.txt
 
 # for chapter 6+
-pip install requirements.txt
+pip install -r requirements.txt
 pip install -e src/
 ```
 
@@ -60,9 +60,9 @@ pip install -e src/
 ```sh
 make test
 # or, to run individual test types
-make unit
-make integration
-make e2e
+make unit-tests
+make integration-tests
+make e2e-tests
 # or, if you have a local virtualenv
 make up
 pytest tests/unit

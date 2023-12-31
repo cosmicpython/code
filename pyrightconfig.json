@@ -1,0 +1,38 @@
+{
+  "include": ["./**/*"],
+  "exclude": [
+    "**/__pycache__",
+    "**/node_modules",
+    "db.sqlite3",
+    "**/migrations/*"
+  ],
+
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "reportOptionalMemberAccess": false,
+  "reportOptionalSubscript": false,
+  "reportGeneralTypeIssues": true,
+  "reportUnnecessaryIsInstance": true,
+  "reportUnboundVariable": true,
+  "reportUnknownVariableType": true,
+  "reportUnknownMemberType": true,
+  "reportMissingModuleSource": true,
+  "reportMissingParameterType": false,
+  "reportUnknownParameterType": false,
+  "reportUntypedFunctionDecorator": true,
+  "reportUntypedClassDecorator": true,
+  "reportUntypedBaseClass": false,
+  "reportUntypedNamedTuple": true,
+  "reportPrivateUsage": false,
+  "strictListInference": true,
+  "strictDictionaryInference": true,
+  "strictParameterNoneValue": false,
+  "strictOptional": true,
+  "typeCheckingMode": "basic",
+
+  "venvPath": ".",
+  "pythonPlatform": "Windows",
+  "pythonVersion": "3.11",
+
+  "useLibraryCodeForTypes": true
+}

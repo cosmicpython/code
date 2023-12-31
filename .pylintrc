@@ -1,0 +1,25 @@
+[MASTER]
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+# Отключите правило missing-class-docstring
+disable=
+    missing-class-docstring, 
+    missing-module-docstring,
+    missing-function-docstring
+# Вы можете добавить другие правила для отключения здесь
+# disable=another-rule, yet-another-rule
+
+[REPORTS]
+# Выключить вывод отчетов о стиле кода
+output-format=text
+reports=no
+evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
+
+[TYPECHECK]
+# Игнорировать отсутствие документации для конкретных типов функций и классов
+ignored-classes=SQLAlchemy
+
+[FORMAT]
+# Настройка стиля кода
+max-line-length=120

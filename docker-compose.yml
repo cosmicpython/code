@@ -51,7 +51,7 @@ services:
       - "5005:80"
 
   postgres:
-    image: postgres:9.6
+    image: postgres:16.1
     environment:
       - POSTGRES_USER=allocation
       - POSTGRES_PASSWORD=abc123

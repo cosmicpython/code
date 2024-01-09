@@ -1,5 +1,5 @@
 # app
-sqlalchemy<2
+sqlalchemy
 flask
 psycopg2-binary
 redis

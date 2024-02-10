@@ -1,14 +1,19 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from datetime import date
-from typing import Optional, List, Set
+import dataclasses
+import datetime
+import typing
+
+OrderReference = typing.NewType("OrderReference", str)
+Quantity = typing.NewType("Quantity", int)
+Sku = typing.NewType("Sku", str)
+Reference = typing.NewType("Reference", str)
 
 
 class OutOfStock(Exception):
     pass
 
 
-def allocate(line: OrderLine, batches: List[Batch]) -> str:
+def allocate(line: OrderLine, batches: typing.List[Batch]) -> str:
     try:
         batch = next(b for b in sorted(batches) if b.can_allocate(line))
         batch.allocate(line)
@@ -17,20 +22,20 @@ def allocate(line: OrderLine, batches: List[Batch]) -> str:
         raise OutOfStock(f"Out of stock for sku {line.sku}")
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class OrderLine:
-    orderid: str
-    sku: str
-    qty: int
+    orderid: OrderReference
+    sku: Sku
+    qty: Quantity
 
 
 class Batch:
-    def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
+    def __init__(self, ref: Reference, sku: Sku, qty: Quantity, eta: typing.Optional[datetime.date]):
         self.reference = ref
         self.sku = sku
         self.eta = eta
         self._purchased_quantity = qty
-        self._allocations = set()  # type: Set[OrderLine]
+        self._allocations = set()  # type: typing.Set[OrderLine]
 
     def __repr__(self):
         return f"<Batch {self.reference}>"

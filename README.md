@@ -73,4 +73,5 @@ pytest tests/e2e
 ## Makefile
 
 There are more useful commands in the makefile, have a look and try them out.
+By Muhammad Hasnain
 

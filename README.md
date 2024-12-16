@@ -10,7 +10,7 @@ you'll want to check out the branch for the previous chapter.
 https://github.com/cosmicpython/code/branches/all
 
 
-## Exercises
+
 
 Branches for the exercises follow the convention `{chapter_name}_exercise`,
 eg https://github.com/cosmicpython/code/tree/chapter_04_service_layer_exercise

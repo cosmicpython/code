@@ -8,7 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     event,
 )
-from sqlalchemy.orm import mapper, relationship
+from sqlalchemy.orm import relationship, registry
 
 from allocation.domain import model
 
@@ -57,10 +57,13 @@ allocations_view = Table(
     Column("batchref", String(255)),
 )
 
+# Create a registry
+mapper_registry = registry()
+
 
 def start_mappers():
-    lines_mapper = mapper(model.OrderLine, order_lines)
-    batches_mapper = mapper(
+    lines_mapper = mapper_registry.map_imperatively(model.OrderLine, order_lines)
+    batches_mapper = mapper_registry.map_imperatively(
         model.Batch,
         batches,
         properties={
@@ -71,7 +74,7 @@ def start_mappers():
             )
         },
     )
-    mapper(
+    mapper_registry.map_imperatively(
         model.Product,
         products,
         properties={"batches": relationship(batches_mapper)},

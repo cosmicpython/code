@@ -1,4 +1,4 @@
-# Example application code for the python architecture book
+# Example application code for the "Architecture Patterns with Python" book
 
 ## Chapters
 
